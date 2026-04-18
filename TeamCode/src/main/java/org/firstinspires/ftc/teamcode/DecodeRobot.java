@@ -49,6 +49,8 @@ public class DecodeRobot {
 
     protected MotifStorage.MotifState motif;
 
+    private double yawDriverRelativeOffset = 0;
+
     public DecodeRobot(RobotMap robotMap, DriveConstants driveConstants, Alliance alliance,
                        Pose pose, MotifStorage.MotifState motif
     ) {
@@ -92,11 +94,13 @@ public class DecodeRobot {
         telemetry.addData("Pose", "X: %.2f, Y: %.2f, Theta: %.2f",
             getPose().getX(), getPose().getY(), Math.toDegrees(getPose().getHeading()));
 
+        telemetry.addData("Field Centric Yaw: ", "X: %.2f", getFieldCentricHeading());
+
         drive.drive(
             drivetrainStrafe(),
             drivetrainForward(),
             drivetrainTurn(),
-            getFieldCentricHeading(),
+            getHeading()-(getAlliance() == Alliance.RED ? 0 : 180)-yawDriverRelativeOffset,
             driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)
         );
     }
@@ -118,6 +122,10 @@ public class DecodeRobot {
 
     public void setRobotCentric() {
         drive.setRobotCentric();
+    }
+
+    public void resetFieldCentricReference() {
+        yawDriverRelativeOffset = getHeading();
     }
 
     public void setAutoEnabled(boolean enabled) {
@@ -175,13 +183,13 @@ public class DecodeRobot {
     public void initTele(RobotMap robotMap, Pose startingPose) {
         teleOpLocalizer = new PinpointLocalizer(robotMap.getHm(), Constants.localizerConstants, startingPose);
 
-//        gyro = new IMUSubsystem(
-//            robotMap, () -> (MathFunction.wrapDegrees(Math.toDegrees(getPose().getHeading()) - (getAlliance() == Alliance.RED ? -90 : 90)))
-//        );
-
         gyro = new IMUSubsystem(
-                robotMap, () -> (MathFunction.wrapDegrees(Math.toDegrees(getPose().getHeading())))
+            robotMap, () -> (MathFunction.wrapDegrees(Math.toDegrees(getPose().getHeading())))
         );
+
+//        gyro = new IMUSubsystem(
+//                robotMap, () -> (MathFunction.wrapDegrees(Math.toDegrees(getPose().getHeading())))
+//        );
 
         CommandScheduler.getInstance().registerSubsystem(gyro);
 
@@ -198,7 +206,7 @@ public class DecodeRobot {
     public void initMechanismsTeleOp(RobotMap robotMap) {
         hasInit = true;
 
-        driverOp.getGamepadButton(GamepadKeys.Button.START).whenPressed(gyro::resetPinPointYawValue);
+        driverOp.getGamepadButton(GamepadKeys.Button.START).whenPressed(this::resetFieldCentricReference);
 
         intake = new Intake(robotMap);
 
@@ -225,14 +233,12 @@ public class DecodeRobot {
                 new ConditionalCommand(
                         new SequentialCommandGroup(
                                 new InstantCommand(intake::disengagePassthough),
-                                new InstantCommand(shooter::enableWheels),
                                 new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(intake::intake),
-                                new WaitCommand(200),
+                                new WaitCommand(100),
                                 new InstantCommand(intake::engagePassthough),
-                                new WaitCommand(1500),
-                                new InstantCommand(intake::disengagePassthough),
-                                new InstantCommand(shooter::disableWheels)
+                                new WaitCommand(1400),
+                                new InstantCommand(intake::disengagePassthough)
                         ),
                         new InstantCommand(),
                         () -> shooter.turretInRange() && shooter.inLUTRange()
@@ -245,18 +251,22 @@ public class DecodeRobot {
                 shooter::areWheelsEnabled
         ));
 
+        driverOp.getGamepadButton(GamepadKeys.Button.A).whenPressed(new ConditionalCommand(
+                new InstantCommand(shooter::disableWheels),
+                new InstantCommand(shooter::enableWheels),
+                shooter::areWheelsEnabled
+        ));
+
         driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
                 new ConditionalCommand(
                         new SequentialCommandGroup(
                                 new InstantCommand(intake::disengagePassthough),
-                                new InstantCommand(shooter::enableWheels),
                                 new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(intake::intake),
-                                new WaitCommand(200),
+                                new WaitCommand(100),
                                 new InstantCommand(intake::engagePassthough),
-                                new WaitCommand(1500),
-                                new InstantCommand(intake::disengagePassthough),
-                                new InstantCommand(shooter::disableWheels)
+                                new WaitCommand(1400),
+                                new InstantCommand(intake::disengagePassthough)
                         ),
                         new InstantCommand(),
                         () -> shooter.turretInRange() && shooter.inLUTRange()
@@ -268,5 +278,21 @@ public class DecodeRobot {
                 new InstantCommand(intake::stop),
                 () -> intake.getState() == Intake.IntakeState.STOPPED
         ));
+
+        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+                new InstantCommand(shooter::increaseTurretTrim)
+        );
+
+        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                new InstantCommand(shooter::decreaseTurretTrim)
+        );
+
+        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+                new InstantCommand(shooter::increaseTurretTrim)
+        );
+
+        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                new InstantCommand(shooter::decreaseTurretTrim)
+        );
     }
 }

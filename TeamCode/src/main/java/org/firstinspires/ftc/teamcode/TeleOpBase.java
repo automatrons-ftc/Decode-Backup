@@ -70,12 +70,12 @@ public class TeleOpBase extends CommandOpMode {
 //        pose = PoseStorage.currentPose;
     }
 
-    public void initAllianceRelated(DecodeRobot.Alliance alliance) {
+    public void initAllianceRelated(DecodeRobot.Alliance alliance, Pose customPose) {
         robot = new DecodeRobot(
             robotMap,
             RobotConstants,
             alliance,
-            pose,
+            customPose,
             MotifStorage.currentMotif
         );
     }

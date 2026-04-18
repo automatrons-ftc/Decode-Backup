@@ -16,7 +16,7 @@ public class IMUSubsystem extends SubsystemBase {
     private double turns = 0;
     private double rawYaw = 0, rawPitch = 0, rawRoll = 0;
     private double contYaw;
-    private double initYaw = 0, initYaw2 = 0;
+    private double initYaw = 0;
     private Timer timer;
     private double in_time;
 
@@ -35,7 +35,7 @@ public class IMUSubsystem extends SubsystemBase {
 
     public IMUSubsystem(RobotMap robotMap, DoubleSupplier pinpoint) {
         pinpoint_yaw = pinpoint;
-        initYaw2 = pinpoint.getAsDouble();
+        initYaw = pinpoint.getAsDouble();
         timer = new Timer(0);
         timer.start();
 
@@ -64,11 +64,11 @@ public class IMUSubsystem extends SubsystemBase {
     }
 
     public double getRawYaw() {
-        return rawYaw-initYaw2;
+        return rawYaw;
     }
 
     public double getFieldCentricYaw() {
-        return rawYaw+initYaw-initYaw2;
+        return rawYaw+initYaw;
     }
 
     public double getPitch() {
@@ -100,9 +100,5 @@ public class IMUSubsystem extends SubsystemBase {
 
     public void resetYawValue() {
         imu.resetYaw();
-    }
-
-    public void resetPinPointYawValue() {
-        initYaw = -pinpoint_yaw.getAsDouble();
     }
 }

@@ -54,6 +54,8 @@ public class Shooter extends SubsystemBase {
     public static double customTurretTarget = 0, customShooterSpeed = 0, customHoodPosition = 0.5;
 
 
+    private double turretTrim = 0;
+
     public Shooter(RobotMap robotMap, Supplier<Pose> curPose, DecodeRobot.Alliance alliance, Telemetry telemetry) {
         this.wheel1 = robotMap.getShooterWheel1Motor();
         this.wheel2 = robotMap.getShooterWheel2Motor();
@@ -182,7 +184,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getTurretAngle() {
-        return ((turretMotor.getCurrentPosition())%TICKS_PER_FULL_ROTATION)*360.0/TICKS_PER_FULL_ROTATION;
+        return ((turretMotor.getCurrentPosition())%TICKS_PER_FULL_ROTATION)*360.0/TICKS_PER_FULL_ROTATION - turretTrim;
     }
 
     public boolean turretInRange() {
@@ -223,5 +225,13 @@ public class Shooter extends SubsystemBase {
         if (relativeAngle < -180) relativeAngle += 360;
 
         return relativeAngle;
+    }
+
+    public void increaseTurretTrim() {
+        turretTrim += 1;
+    }
+
+    public void decreaseTurretTrim() {
+        turretTrim -= 1;
     }
 }

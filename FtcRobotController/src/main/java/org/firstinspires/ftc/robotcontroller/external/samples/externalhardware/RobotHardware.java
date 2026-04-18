@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.robotcontroller.external.samples.externalhardware;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -53,6 +54,7 @@ import com.qualcomm.robotcore.util.Range;
  *
  */
 
+@Disabled
 public class RobotHardware {
 
     /* Declare OpMode members. */
