@@ -52,10 +52,10 @@ public class RobotMap {
         hubs = hm.getAll(LynxModule.class);
 
         /*--Motors--*/
-        frontLeft = new MotorExEx(hm, "motorFL", Motor.GoBILDA.RPM_312);
-        rearLeft = new MotorExEx(hm, "motorBL", Motor.GoBILDA.RPM_312);
-        frontRight = new MotorExEx(hm, "motorFR", Motor.GoBILDA.RPM_312);
-        rearRight = new MotorExEx(hm, "motorBR", Motor.GoBILDA.RPM_312);
+        frontLeft = new MotorExEx(hm, "motorFL", Motor.GoBILDA.RPM_435);
+        rearLeft = new MotorExEx(hm, "motorBL", Motor.GoBILDA.RPM_435);
+        frontRight = new MotorExEx(hm, "motorFR", Motor.GoBILDA.RPM_435);
+        rearRight = new MotorExEx(hm, "motorBR", Motor.GoBILDA.RPM_435);
 
         frontLeft.setRunMode(Motor.RunMode.RawPower);
         rearLeft.setRunMode(Motor.RunMode.RawPower);

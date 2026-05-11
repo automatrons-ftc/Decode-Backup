@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.control.PredictiveBrakingCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -31,18 +32,18 @@ public class Constants {
 
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(11.5)
-            .forwardZeroPowerAcceleration(-32.0664)
-            .forwardZeroPowerAcceleration(-55.7232)
 
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.02, 0.0, 0.0004, 0.4, 0.01))
+            .forwardZeroPowerAcceleration(-41.12)
+            .lateralZeroPowerAcceleration(-78.53)
 
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.2, 0.0, 0.018, 0.01))
-            .secondaryTranslationalPIDFCoefficients(new PIDFCoefficients(0.2,0.0007,0.03,0))
+            .useSecondaryHeadingPIDF(true)
 
             .headingPIDFCoefficients(new PIDFCoefficients(1.8, 0, 0.08, 0.01))
             .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(2,0.1,0.12,0.01))
 
-            .centripetalScaling(0.0006);
+            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.07, 0.0562888, 0.001708409)) // (kP, kLinear, kQuadratic)
+
+            .centripetalScaling(0);
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -54,8 +55,8 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity(68.5219)
-            .yVelocity(5.8347);
+            .xVelocity(76.02)
+            .yVelocity(61.2);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
