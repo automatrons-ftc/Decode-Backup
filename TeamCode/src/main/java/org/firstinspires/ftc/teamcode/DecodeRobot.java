@@ -61,10 +61,11 @@ public class DecodeRobot {
         initTele(robotMap, pose);
 
         // Init Mechanisms when driver starts moving the robot
-        new Trigger(() -> (Math.abs(drivetrainForward()) > 0.1 ||
-            Math.abs(drivetrainStrafe()) > 0.1 ||
-            Math.abs(drivetrainTurn()) > 0.1) && !hasInit)
-            .whenActive(new InstantCommand(() -> this.initMechanismsTeleOp(robotMap)));
+        this.initMechanismsTeleOp(robotMap);
+//        new Trigger(() -> (Math.abs(drivetrainForward()) > 0.1 ||
+//            Math.abs(drivetrainStrafe()) > 0.1 ||
+//            Math.abs(drivetrainTurn()) > 0.1) && !hasInit)
+//            .whenActive(new InstantCommand(() -> this.initMechanismsTeleOp(robotMap)));
     }
 
     public DecodeRobot(RobotMap robotMap, DriveConstants driveConstants, Alliance alliance
@@ -186,10 +187,6 @@ public class DecodeRobot {
         gyro = new IMUSubsystem(
             robotMap, () -> (MathFunction.wrapDegrees(Math.toDegrees(getPose().getHeading())))
         );
-
-//        gyro = new IMUSubsystem(
-//                robotMap, () -> (MathFunction.wrapDegrees(Math.toDegrees(getPose().getHeading())))
-//        );
 
         CommandScheduler.getInstance().registerSubsystem(gyro);
 

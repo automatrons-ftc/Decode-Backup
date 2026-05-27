@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.Mechanisms;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.util.InterpLUT;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -12,6 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.CodeParameters;
 import org.firstinspires.ftc.teamcode.Controllers.MotorFF;
 import org.firstinspires.ftc.teamcode.Controllers.PIDFEx;
 import org.firstinspires.ftc.teamcode.Controllers.PIDFExCoeffs;
@@ -34,15 +34,10 @@ public class Shooter extends SubsystemBase {
     private static final int WHEEL_TICKS_PER_REV = 28, WHEEL_MAX_RPM = 5800;
     private static final double MAX_TICKS_PER_S = 2700;
 
-    // Hood
-    private static final double MIN_HOOD_POS = 0.9, MAX_HOOD_POS = 0.45;
-
     // Turret
     private final int MOTOR_TICKS_PER_REV = 538;
     private final double GEAR_RATIO = 130.0/28.0;
     private final int TICKS_PER_FULL_ROTATION = (int)(MOTOR_TICKS_PER_REV * GEAR_RATIO);
-    private static final double MAX_TURRET_POWER = 1.0;
-    private static final double MIN_TURRET_ANGLE = -70.0, MAX_TURRET_ANGLE = 70;
 
     // IK (Vectoring)
     private static final double
@@ -70,8 +65,6 @@ public class Shooter extends SubsystemBase {
 
     // ---------------------------------------- Poses ------------------------------------------- //
     private Supplier<Pose> curPose, curPoseVel, futurePose, curPoseAccel;
-    private final Pose REDGoalPose = new Pose(141.0, 141.0, 0);
-    private final Pose BLUEGoalPose = new Pose(3.0, 141.0, 0);
     private final Pose goalPose;
 
     // ---------------------------------- Controllers and LUTs ---------------------------------- //
@@ -84,9 +77,6 @@ public class Shooter extends SubsystemBase {
     // ------------------------------------ Turret Zeroing -------------------------------------- //
     private boolean turretZeroed = false;
     private double turretZeroPower = -0.25;
-    private double turretZeroCurrentThreshold = 2.0;
-    private static double turretZeroOffset = 0;
-    private static double turretZeroOffsetReversed = -195.5346;
     private boolean startReversed = false;
     private StateMachine hasStalled;
 
@@ -99,9 +89,6 @@ public class Shooter extends SubsystemBase {
     private DoubleSupplier voltage;
 
     private boolean fingerOpen = false;
-    public static double FINGER_OPENED_POS = 0.918, FINGER_CLOSED_POS = 0.755;
-
-    public static double custom_vel = 0.2, custom_hood = 0.0;
 
     public Shooter(RobotMap robotMap, Supplier<Pose> curPose, Supplier<Pose> curPoseVel,
                    DecodeRobot.Alliance alliance, boolean doZero) {
@@ -144,13 +131,13 @@ public class Shooter extends SubsystemBase {
 
         shooterLock = ShooterGoal.ALLIANCE_GOAL;
 
-        hasStalled = new StateMachine(() -> ((DcMotorEx)turretMotor.getRawMotor()).getCurrent(CurrentUnit.AMPS) > turretZeroCurrentThreshold, 300);
+        hasStalled = new StateMachine(() -> ((DcMotorEx)turretMotor.getRawMotor()).getCurrent(CurrentUnit.AMPS) > CodeParameters.turretZeroCurrentThreshold, 300);
 
         wheel1.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
         wheel2.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
         wheel2.setInverted(true);
 
-        goalPose = (alliance == DecodeRobot.Alliance.RED) ? REDGoalPose : BLUEGoalPose;
+        goalPose = (alliance == DecodeRobot.Alliance.RED) ? CodeParameters.REDGoalPose : CodeParameters.BLUEGoalPose;
 
         coeffsTurret = new PIDFExCoeffs(
                 0.055,
@@ -188,11 +175,11 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         hoodServo.setPosition(Range.scale(
-                custom_hood,
+                0,
                 0,
                 1,
-                MIN_HOOD_POS,
-                MAX_HOOD_POS
+                CodeParameters.MIN_HOOD_POS,
+                CodeParameters.MAX_HOOD_POS
         ));
 
         if(!turretZeroed) {
@@ -210,11 +197,11 @@ public class Shooter extends SubsystemBase {
             turretController.setSetPoint(-101);
             turretMotor.set(Range.clip(
                     turretController.calculate(getTurretAngle()),
-                    -MAX_TURRET_POWER,
-                    MAX_TURRET_POWER
+                    -CodeParameters.MAX_TURRET_POWER,
+                    CodeParameters.MAX_TURRET_POWER
             ));
 
-            hoodServo.setPosition(MIN_HOOD_POS);
+            hoodServo.setPosition(CodeParameters.MIN_HOOD_POS);
             return;
         }
 
@@ -239,8 +226,8 @@ public class Shooter extends SubsystemBase {
 
         turretMotor.set(Range.clip(
                 turretController.calculate(getTurretAngle()),
-                -MAX_TURRET_POWER,
-                MAX_TURRET_POWER
+                -CodeParameters.MAX_TURRET_POWER,
+                CodeParameters.MAX_TURRET_POWER
         ));
 
         if(wheelsEnabled) {
@@ -248,37 +235,37 @@ public class Shooter extends SubsystemBase {
             wheel2.set(getControlledWheelPower(0.6));
         }
 
-//        if(!inLUTRange()) {
-//            if(inAuto) {
-//                wheel1.set(getControlledWheelPower(0.58));
-//                wheel2.set(getControlledWheelPower(0.58));
-//            }
-//            return;
-//        }
-//
-//        if(!inLUTRange()) return;
-//
-//        // ---------------------------------------- Hood ---------------------------------------- //
-//        hoodServo.setPosition(Range.scale(
-//                (hoodLockEnabled ? lu_values.getHood(getDistanceToGoal(futurePose.get())) : 0),
-//                0,
-//                1,
-//                MIN_HOOD_POS,
-//                MAX_HOOD_POS
-//        ));
-//
-//        // --------------------------------------- Wheels --------------------------------------- //
-//        if(wheelsEnabled) {
-//            if(small_triangle_accel && atSmallTriangle()) {
-//                wheel1.set(getControlledWheelPower(accel_value));
-//                wheel2.set(getControlledWheelPower(accel_value));
-//                return;
-//            }
-//
-//            double futurePoseDist = getDistanceToGoal(futurePose.get());
-//            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
-//            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
-//        }
+        if(!inLUTRange()) {
+            if(inAuto) {
+                wheel1.set(getControlledWheelPower(0.58));
+                wheel2.set(getControlledWheelPower(0.58));
+            }
+            return;
+        }
+
+        if(!inLUTRange()) return;
+
+        // ---------------------------------------- Hood ---------------------------------------- //
+        hoodServo.setPosition(Range.scale(
+                (hoodLockEnabled ? lu_values.getHood(getDistanceToGoal(futurePose.get())) : 0),
+                0,
+                1,
+                CodeParameters.MIN_HOOD_POS,
+                CodeParameters.MAX_HOOD_POS
+        ));
+
+        // --------------------------------------- Wheels --------------------------------------- //
+        if(wheelsEnabled) {
+            if(small_triangle_accel && atSmallTriangle()) {
+                wheel1.set(getControlledWheelPower(accel_value));
+                wheel2.set(getControlledWheelPower(accel_value));
+                return;
+            }
+
+            double futurePoseDist = getDistanceToGoal(futurePose.get());
+            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+        }
     }
 
     // ----------------------------------------- Wheels ----------------------------------------- //
@@ -319,20 +306,24 @@ public class Shooter extends SubsystemBase {
 
     // ----------------------------------------- Turret ----------------------------------------- //
     public double getTurretAngle() {
-        if (startReversed) {
-            return turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION) - turretZeroOffsetReversed;
-        }
+//        if (startReversed) {
+//            return (turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION))*CodeParameters.TURRET_ANGLE_MULTIPLIER - CodeParameters.turretZeroOffsetReversed;
+//        }
+//
+//        return (turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION))*CodeParameters.TURRET_ANGLE_MULTIPLIER - CodeParameters.turretZeroOffset;
 
-        return turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION) - turretZeroOffset;
+        // simpler
+        return (turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION))*CodeParameters.TURRET_ANGLE_MULTIPLIER -
+                (startReversed ? CodeParameters.turretZeroOffsetReversed : CodeParameters.turretZeroOffset);
     }
 
     public void resetOffset() {
-        turretZeroOffset = startReversed ? 102.5 : 195.5346;
+        CodeParameters.turretZeroOffset = startReversed ? -CodeParameters.turretZeroOffsetReversed : -CodeParameters.turretZeroOffset;
     }
 
     public boolean turretInRange() {
         double angleToGoal = getAngleToGoal();
-        return angleToGoal > MIN_TURRET_ANGLE && angleToGoal < MAX_TURRET_ANGLE;
+        return angleToGoal > CodeParameters.MIN_TURRET_ANGLE && angleToGoal < CodeParameters.MAX_TURRET_ANGLE;
     }
 
     public boolean turretAtGoal() {
@@ -380,7 +371,7 @@ public class Shooter extends SubsystemBase {
         if (relativeAngle >= 180) relativeAngle -= 360;
         if (relativeAngle < -180) relativeAngle += 360;
 
-        relativeAngle = Range.clip(relativeAngle, MIN_TURRET_ANGLE, MAX_TURRET_ANGLE);
+        relativeAngle = Range.clip(relativeAngle, CodeParameters.MIN_TURRET_ANGLE, CodeParameters.MAX_TURRET_ANGLE);
 
         return relativeAngle;
     }
@@ -469,8 +460,8 @@ public class Shooter extends SubsystemBase {
         return shooterLock == ShooterGoal.DISABLED;
     }
 
-    public void increase_turret_offset() { turretZeroOffset += 1.0; }
-    public void decrease_turret_offset() { turretZeroOffset -= 1.0; }
+    public void increase_turret_offset() { CodeParameters.turretZeroOffset += 1.0; }
+    public void decrease_turret_offset() { CodeParameters.turretZeroOffset -= 1.0; }
 
     public void enableObelisk() {
         //pare mou mia pipa
@@ -495,12 +486,12 @@ public class Shooter extends SubsystemBase {
 
     public void closeFinger() {
         fingerOpen = false;
-        shooterFinger.setPosition(FINGER_CLOSED_POS);
+        shooterFinger.setPosition(CodeParameters.FINGER_CLOSED_POS);
     }
 
     public void openFinger() {
         fingerOpen = true;
-        shooterFinger.setPosition(FINGER_OPENED_POS);
+        shooterFinger.setPosition(CodeParameters.FINGER_OPENED_POS);
     }
 
     public boolean isFingerOpen() {

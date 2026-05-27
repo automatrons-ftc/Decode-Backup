@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.Mechanisms;
 
+import org.firstinspires.ftc.teamcode.CodeParameters;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -14,8 +15,6 @@ public class Intake extends SubsystemBase {
     private final MotorExEx intakeMotor;
     private final ServoImplEx passthough;
 
-    private final double INTAKE_POWER = 1.0;
-
     public enum IntakeState {
         INTAKE,
         REVERSE,
@@ -24,9 +23,7 @@ public class Intake extends SubsystemBase {
 
     private IntakeState state = IntakeState.STOPPED;
     private Telemetry telemetry;
-
     private boolean passthoughEngaged = false;
-    public static double PASSTHROUGH_ENGAGED_POS = 0.75, PASSTHROUGH_DISENGAGED_POS = 0.51;
 
     public Intake(RobotMap robotMap) {
         this.intakeMotor = robotMap.getIntakeMotor();
@@ -41,16 +38,16 @@ public class Intake extends SubsystemBase {
         telemetry.addData("[Intake] State ", state);
         telemetry.addData("[Passthough] Engaged ", passthoughEngaged);
 
-        passthough.setPosition(passthoughEngaged ? PASSTHROUGH_ENGAGED_POS : PASSTHROUGH_DISENGAGED_POS);
+        passthough.setPosition(passthoughEngaged ? CodeParameters.PASSTHROUGH_ENGAGED_POS : CodeParameters.PASSTHROUGH_DISENGAGED_POS);
     }
 
     public void intake() {
-        intakeMotor.set(INTAKE_POWER);
+        intakeMotor.set(CodeParameters.INTAKE_POWER);
         state = IntakeState.INTAKE;
     }
 
     public void reverse() {
-        intakeMotor.set(-INTAKE_POWER);
+        intakeMotor.set(-CodeParameters.INTAKE_POWER);
         state = IntakeState.REVERSE;
     }
 
