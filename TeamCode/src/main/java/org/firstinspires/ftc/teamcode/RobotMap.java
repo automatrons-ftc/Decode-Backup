@@ -35,7 +35,7 @@ public class RobotMap {
 
     // Shooter
     MotorExEx wheel1, wheel2, turretMotor;
-    ServoImplEx hoodServo;
+    ServoImplEx hoodServo, shooterFinger;
 
     public RobotMap(HardwareMap hm, Telemetry telemetry) {
         this(hm, telemetry, null, null);
@@ -77,13 +77,15 @@ public class RobotMap {
         intake = new MotorExEx(hm, "intake", Motor.GoBILDA.RPM_1150);
 
         // Passthough
-        passthoughServo = hm.get(ServoImplEx.class, "intake_pivot");
+        passthoughServo = hm.get(ServoImplEx.class, "ramp");
 
         // Shooter
         wheel1 = new MotorExEx(hm, "shooter_1", Motor.GoBILDA.BARE);
         wheel2 = new MotorExEx(hm, "shooter_2", Motor.GoBILDA.BARE);
         turretMotor = new MotorExEx(hm, "rotary", Motor.GoBILDA.RPM_312);
-        hoodServo = hm.get(ServoImplEx.class, "adjust_servo");
+
+        hoodServo = hm.get(ServoImplEx.class, "hoodServo");
+        shooterFinger = hm.get(ServoImplEx.class, "shooter_finger");
     }
 
     // ---------------------------------------- Gamepads ---------------------------------------- //
@@ -158,6 +160,10 @@ public class RobotMap {
 
     public ServoImplEx getHoodServo() {
         return hoodServo;
+    }
+
+    public ServoImplEx getShooterFinger() {
+        return shooterFinger;
     }
 
     public HardwareMap getHm() {

@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Controllers;
 
-public class PIDFExCon {
+public class PIDFExCoeffs {
 
     private double
         kP,
@@ -12,14 +12,14 @@ public class PIDFExCon {
         integralWorkingBounds = Double.POSITIVE_INFINITY,
         integralClippingBounds = Double.POSITIVE_INFINITY;
 
-    public PIDFExCon(double kP,
-                     double kI,
-                     double kD,
-                     double kF,
-                     double alpha,
-                     double deadzone,
-                     double integralWorkingBounds,
-                     double integralClippingBounds)
+    public PIDFExCoeffs(double kP,
+                        double kI,
+                        double kD,
+                        double kF,
+                        double alpha,
+                        double deadzone,
+                        double integralWorkingBounds,
+                        double integralClippingBounds)
     {
         this.kP = kP;
         this.kI = kI;
@@ -95,7 +95,7 @@ public class PIDFExCon {
         return integralClippingBounds;
     }
 
-    public PIDFExCon get() {
+    public PIDFExCoeffs get() {
         return this;
     }
 }

@@ -5,7 +5,8 @@ import org.firstinspires.ftc.teamcode.Filters.IIRFilter;
 public class PIDFEx {
 
         private IIRFilter filter;
-        private double integralWorkingBounds = Double.POSITIVE_INFINITY, integralClippingBounds = Double.POSITIVE_INFINITY;
+        private double integralWorkingBounds = Double.POSITIVE_INFINITY,
+                integralClippingBounds = Double.POSITIVE_INFINITY;
 
         private double kP, kI, kD, kF;
         private double alpha;
@@ -28,28 +29,55 @@ public class PIDFEx {
 
         private double deadzone;
 
-        /**
-         * The base constructor for the PIDF controller
-         */
-        public PIDFEx (double kp, double ki, double kd, double kf, double alpha, double deadzone, double integralWorkingBounds, double integralClippingBounds) {
-            this(kp, ki, kd, kf, 0, 0, alpha, deadzone, integralWorkingBounds, integralClippingBounds);
+        public PIDFEx (
+                double kp,
+                double ki,
+                double kd,
+                double kf,
+                double alpha,
+                double deadzone,
+                double integralWorkingBounds,
+                double integralClippingBounds
+        ) {
+            this(
+                    kp,
+                    ki,
+                    kd,
+                    kf,
+                    0,
+                    0,
+                    alpha,
+                    deadzone,
+                    integralWorkingBounds,
+                    integralClippingBounds
+            );
         }
 
-        public PIDFEx(PIDFExCon cons) {
-            this(cons.getkP(), cons.getkI(), cons.getkD(), cons.getkF(), cons.getAlpha(), cons.getDeadzone(),
-                 cons.getIntegralWorkingBounds(), cons.getIntegralClippingBounds());
+        public PIDFEx(PIDFExCoeffs cons) {
+            this(
+                    cons.getkP(),
+                    cons.getkI(),
+                    cons.getkD(),
+                    cons.getkF(),
+                    cons.getAlpha(),
+                    cons.getDeadzone(),
+                    cons.getIntegralWorkingBounds(),
+                    cons.getIntegralClippingBounds()
+            );
         }
 
-        /**
-         * This is the full constructor for the PIDF controller. Our PIDF controller
-         * includes a feed-forward value which is useful for fighting friction and gravity.
-         * Our errorVal represents the return of e(t) and prevErrorVal is the previous error.
-         *
-         * @param sp The setpoint of the pid control loop.
-         * @param pv The measured value of he pid control loop. We want sp = pv, or to the degree
-         *           such that sp - pv, or e(t) < tolerance.
-         */
-        public PIDFEx(double kp, double ki, double kd, double kf, double sp, double pv, double alpha, double deadzone, double integralWorkingBounds, double integralClippingBounds) {
+        public PIDFEx(
+                double kp,
+                double ki,
+                double kd,
+                double kf,
+                double sp,
+                double pv,
+                double alpha,
+                double deadzone,
+                double integralWorkingBounds,
+                double integralClippingBounds
+        ) {
             kP = kp;
             kI = ki;
             kD = kd;
@@ -86,40 +114,19 @@ public class PIDFEx {
             lastTimeStamp = 0;
         }
 
-        /**
-         * Sets the error which is considered tolerable for use with {@link #atSetPoint()}.
-         *
-         * @param positionTolerance Position error which is tolerable.
-         */
         public void setTolerance(double positionTolerance) {
             setTolerance(positionTolerance, Double.POSITIVE_INFINITY);
         }
 
-        /**
-         * Sets the error which is considered tolerable for use with {@link #atSetPoint()}.
-         *
-         * @param positionTolerance Position error which is tolerable.
-         * @param velocityTolerance Velocity error which is tolerable.
-         */
         public void setTolerance(double positionTolerance, double velocityTolerance) {
             errorTolerance_p = positionTolerance;
             errorTolerance_v = velocityTolerance;
         }
 
-        /**
-         * Returns the current setpoint of the PIDFController.
-         *
-         * @return The current setpoint.
-         */
         public double getSetPoint() {
             return setPoint;
         }
 
-        /**
-         * Sets the setpoint for the PIDFController
-         *
-         * @param sp The desired setpoint.
-         */
         public void setSetPoint(double sp) {
             setPoint = sp;
             errorVal_p = setPoint - measuredValue;
@@ -128,52 +135,26 @@ public class PIDFEx {
             errorVal_v = (errorVal_p_filtered - prevErrorVal_filtered) / period;
         }
 
-        /**
-         * Returns true if the error is within the percentage of the total input range, determined by
-         * {@link #setTolerance}.
-         *
-         * @return Whether the error is within the acceptable bounds.
-         */
         public boolean atSetPoint() {
             return Math.abs(errorVal_p) < errorTolerance_p
                 && Math.abs(errorVal_v) < errorTolerance_v;
         }
-
-        /**
-         * @return the PIDF coefficients
-         */
         public double[] getCoefficients() {
             return new double[]{kP, kI, kD, kF};
         }
 
-        /**
-         * @return the positional error e(t)
-         */
         public double getPositionError() {
             return errorVal_p;
         }
 
-        /**
-         * @return the tolerances of the controller
-         */
         public double[] getTolerance() {
             return new double[]{errorTolerance_p, errorTolerance_v};
         }
 
-        /**
-         * @return the velocity error e'(t)
-         */
         public double getVelocityError() {
             return errorVal_v;
         }
 
-        /**
-         *
-         * Calculates the control value, u(t).
-         *
-         * @param
-         * @return
-         */
         public double calculate(double pv) {
 
             prevErrorVal_filtered = errorVal_p_filtered;
@@ -204,13 +185,17 @@ public class PIDFEx {
              */
             if (errorVal_p > -integralWorkingBounds && errorVal_p < integralWorkingBounds) {
                 totalError += period * (setPoint - measuredValue);
-                totalError = totalError < minIntegral ? minIntegral : Math.min(maxIntegral, totalError);
+                totalError = totalError < minIntegral
+                        ? minIntegral
+                        :
+                        Math.min(maxIntegral, totalError);
             } else if (setPoint - measuredValue < errorTolerance_p) {
                 totalError = 0;
             }
 
             // returns u(t)
-            return Math.abs(getPositionError()) > deadzone ? kP * errorVal_p + kI * totalError + kD * errorVal_v + kF * setPoint : 0;
+            return Math.abs(getPositionError()) > deadzone ? kP * errorVal_p +
+                    kI * totalError + kD * errorVal_v + kF * setPoint : 0;
         }
 
         public void setPIDF(double kp, double ki, double kd, double kf) {
@@ -225,7 +210,7 @@ public class PIDFEx {
             maxIntegral = integralMax;
         }
 
-        public void setCofficients(PIDFExCon cons) {
+        public void setCofficients(PIDFExCoeffs cons) {
             setP(cons.getkP());
             setI(cons.getkI());
             setD(cons.getkD());
@@ -235,7 +220,6 @@ public class PIDFEx {
             setIntegralClippingBounds(cons.getIntegralClippingBounds());
         }
 
-        // used to clear kI gains
         public void clearTotalError() {
             totalError = 0;
         }

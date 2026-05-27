@@ -3,170 +3,300 @@ package org.firstinspires.ftc.teamcode.Mechanisms;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.arcrobotics.ftclib.util.InterpLUT;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.Controllers.MotorFF;
 import org.firstinspires.ftc.teamcode.Controllers.PIDFEx;
-import org.firstinspires.ftc.teamcode.Controllers.PIDFExCon;
+import org.firstinspires.ftc.teamcode.Controllers.PIDFExCoeffs;
+import org.firstinspires.ftc.teamcode.Controllers.StateMachine;
 import org.firstinspires.ftc.teamcode.DecodeRobot;
 import org.firstinspires.ftc.teamcode.Hardware.MotorExEx;
 import org.firstinspires.ftc.teamcode.RobotMap;
 
+import java.util.function.DoubleSupplier;
+
 @Config
 public class Shooter extends SubsystemBase {
-    private double SHOOTER_MAX_POWER = 1.0;
-    private final MotorExEx wheel1, wheel2, turretMotor;
-    private ServoImplEx hoodServo;
+    // ---------------------------------------- Hardware ---------------------------------------- //
+    private MotorExEx wheel1, wheel2;
+    private ServoImplEx hoodServo, shooterFinger;
+    private MotorExEx turretMotor;
 
+    // ---------------------------------------- Constants --------------------------------------- //
+    // Wheel
+    private static final int WHEEL_TICKS_PER_REV = 28, WHEEL_MAX_RPM = 5800;
+    private static final double MAX_TICKS_PER_S = 2700;
+
+    // Hood
+    private static final double MIN_HOOD_POS = 0.9, MAX_HOOD_POS = 0.45;
+
+    // Turret
+    private final int MOTOR_TICKS_PER_REV = 538;
+    private final double GEAR_RATIO = 130.0/28.0;
+    private final int TICKS_PER_FULL_ROTATION = (int)(MOTOR_TICKS_PER_REV * GEAR_RATIO);
+    private static final double MAX_TURRET_POWER = 1.0;
+    private static final double MIN_TURRET_ANGLE = -70.0, MAX_TURRET_ANGLE = 70;
+
+    // IK (Vectoring)
+    private static final double
+        stationaryScale = 1.0,
+        robotVelocityScale = 0.00492,
+        robotVelocityScaleAuto = 0.003,
+        wheelSpeedFactor = 1.0;
+
+    private double poseEstimation_dt = 0.21;
+
+    // ----------------------------------------- States ----------------------------------------- //
     private boolean wheelsEnabled = false;
-    private boolean turretLockEnabled = false;
-    private boolean hoodLockEnabled = false;
+    private boolean hoodLockEnabled = true;
+    private boolean small_triangle_accel = false;
+    public static double accel_value = 0.95;
 
-    private Supplier<Pose> curPose;
+    public enum ShooterGoal {
+        ALLIANCE_GOAL,
+        OBELISK,
+        AUTO_CUSTOM,
+        DISABLED
+    }
+
+    private ShooterGoal shooterLock;
+
+    // ---------------------------------------- Poses ------------------------------------------- //
+    private Supplier<Pose> curPose, curPoseVel, futurePose, curPoseAccel;
     private final Pose REDGoalPose = new Pose(141.0, 141.0, 0);
     private final Pose BLUEGoalPose = new Pose(3.0, 141.0, 0);
     private final Pose goalPose;
 
+    // ---------------------------------- Controllers and LUTs ---------------------------------- //
+    private LookUpValues lu_values;
+    private PIDFEx turretController, veloController;
+    private PIDFExCoeffs coeffsTurret, coeffsVelo;
+    private MotorFF feedforward = new MotorFF(0.02, 1.02, 0.12);
+    private boolean inAuto = false;
+
+    // ------------------------------------ Turret Zeroing -------------------------------------- //
+    private boolean turretZeroed = false;
+    private double turretZeroPower = -0.25;
+    private double turretZeroCurrentThreshold = 2.0;
+    private static double turretZeroOffset = 0;
+    private static double turretZeroOffsetReversed = -195.5346;
+    private boolean startReversed = false;
+    private StateMachine hasStalled;
+
+    private double auto_custom_angle = 0.0;
+
+    private boolean accelWheel = false;
+
+    // ------------------------------------------ Util ------------------------------------------ //
     private Telemetry telemetry;
+    private DoubleSupplier voltage;
 
-    // Safety shooter positions ++ InterpolatedLUTs ++ Turret PID ++ Wheel Velo PID
+    private boolean fingerOpen = false;
+    public static double FINGER_OPENED_POS = 0.918, FINGER_CLOSED_POS = 0.755;
 
-    private InterpLUT wheelSpeed, hoodAngle;
+    public static double custom_vel = 0.2, custom_hood = 0.0;
 
-    private final int MOTOR_TICKS_PER_REV = 538;
-    private final double GEAR_RATIO = 130.0/28.0;
-    private final int TICKS_PER_FULL_ROTATION = (int)(MOTOR_TICKS_PER_REV * GEAR_RATIO);
+    public Shooter(RobotMap robotMap, Supplier<Pose> curPose, Supplier<Pose> curPoseVel,
+                   DecodeRobot.Alliance alliance, boolean doZero) {
 
-    private PIDFEx turretController, veloController; // TODO: Motion Profiling!!! Minimize
-    private PIDFExCon coeffsTurret, coeffsVelo;
-    private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 1, 0);
+        this(robotMap, curPose, curPoseVel, () -> new Pose(0,0,0), alliance, doZero, false, false);
+    }
 
-    private static final int WHEEL_TICKS_PER_REV = 28, WHEEL_MAX_RPM = 5800;
-    private static final double MAX_TICKS_PER_S = 2300; // WHEEL_MAX_RPM/60.0 * 28
+    public Shooter(RobotMap robotMap, Supplier<Pose> curPose, Supplier<Pose> curPoseVel, Supplier<Pose> curPoseAccel,
+                   DecodeRobot.Alliance alliance, boolean doZero, boolean startReversed,
+                   boolean inAuto
+    ) {
+        this(robotMap, curPose, curPoseVel, curPoseAccel, alliance, doZero, startReversed, inAuto, false);
+    }
 
-    private static final double MIN_HOOD = 0.9, MAX_HOOD = 0.45; // 0.45, 0.9
-
-    public static double customTurretTarget = 0, customShooterSpeed = 0, customHoodPosition = 0.5;
-
-
-    private double turretTrim = 0;
-
-    public Shooter(RobotMap robotMap, Supplier<Pose> curPose, DecodeRobot.Alliance alliance, Telemetry telemetry) {
+    public Shooter(RobotMap robotMap, Supplier<Pose> curPose, Supplier<Pose> curPoseVel, Supplier<Pose> curPoseAccel,
+                   DecodeRobot.Alliance alliance, boolean doZero, boolean startReversed,
+                   boolean inAuto, boolean accelWheel
+    ) {
         this.wheel1 = robotMap.getShooterWheel1Motor();
         this.wheel2 = robotMap.getShooterWheel2Motor();
 
-        wheel1.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
-        wheel1.setInverted(true);
-        wheel2.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
+        this.hoodServo = robotMap.getHoodServo();
+        this.shooterFinger = robotMap.getShooterFinger();
 
         this.turretMotor = robotMap.getTurretMotor();
+        turretMotor.setInverted(true);
         turretMotor.resetEncoder();
-        turretMotor.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.BRAKE);
-        coeffsTurret = new PIDFExCon(
-                0.15,
-                0.0,
-                0.002,
+        turretZeroed = !doZero;
+        turretZeroed = true;
+        this.startReversed = !doZero && startReversed;
+        this.inAuto = inAuto;
+        this.accelWheel = accelWheel;
+
+        this.telemetry = robotMap.getTelemetry();
+
+        this.curPose = curPose;
+        this.futurePose = () -> estimateFuturePose(poseEstimation_dt);
+        this.curPoseVel = curPoseVel;
+        this.curPoseAccel = curPoseAccel;
+
+        shooterLock = ShooterGoal.ALLIANCE_GOAL;
+
+        hasStalled = new StateMachine(() -> ((DcMotorEx)turretMotor.getRawMotor()).getCurrent(CurrentUnit.AMPS) > turretZeroCurrentThreshold, 300);
+
+        wheel1.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
+        wheel2.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
+        wheel2.setInverted(true);
+
+        goalPose = (alliance == DecodeRobot.Alliance.RED) ? REDGoalPose : BLUEGoalPose;
+
+        coeffsTurret = new PIDFExCoeffs(
+                0.055,
+                0.13,
+                0.00225,
                 0.0,
                 0.2,
-                0.5,
-                0,
-                0
+                0.0,
+                20,
+                0.6
         );
+
         turretController = new PIDFEx(coeffsTurret);
 
-        coeffsVelo = new PIDFExCon(
-                14,
+        coeffsVelo = new PIDFExCoeffs(
+                23,
                 0.0,
-                0.005,
+                0.05,
                 0.0,
                 0.0,
-                10,
+                3,
                 600,
                 0.8
         );
         veloController = new PIDFEx(coeffsVelo);
 
-        this.hoodServo = robotMap.getHoodServo();
-        hoodServo.setPosition(Range.scale(1, 0, 1, MIN_HOOD, MAX_HOOD));
+        lu_values = new LookUpValues(LookUpValues.CurrentWheel.BRONZE_HEAVY);
+        lu_values.fiilWithValues();
 
-//        this.telemetry = robotMap.getTelemetry();
-        this.telemetry = telemetry;
-        this.curPose = curPose;
+        poseEstimation_dt = inAuto ? 0.34 : 0.21;
 
-        // Select Correct Goal Based On Alliance
-        goalPose = (alliance == DecodeRobot.Alliance.RED) ? REDGoalPose : BLUEGoalPose;
-
-        // Initialize LUTs here
-        wheelSpeed = new InterpLUT();
-        hoodAngle = new InterpLUT();
-
-        wheelSpeed.add(40, 0.64);
-        wheelSpeed.add(70, 0.75);
-        wheelSpeed.add(92, 0.82);
-        wheelSpeed.add(114, 0.88);
-        wheelSpeed.add(135, 0.99);
-        wheelSpeed.add(137, 0.99);
-        wheelSpeed.add(139, 1);
-
-        hoodAngle.add(40, 0.0);
-        hoodAngle.add(70, 0.5);
-        hoodAngle.add(92, 0.7);
-        hoodAngle.add(114, 0.9);
-        hoodAngle.add(135, 0.95);
-        hoodAngle.add(137, 0.95);
-
-        wheelSpeed.createLUT();
-        hoodAngle.createLUT();
+        enableWheels();
     }
 
     @Override
     public void periodic() {
-        turretController.setSetPoint(Range.clip(wheelsEnabled ? getAngleToGoal() : 0, -120, 60));
-        turretMotor.set(turretController.calculate(getTurretAngle()));
+        hoodServo.setPosition(Range.scale(
+                custom_hood,
+                0,
+                1,
+                MIN_HOOD_POS,
+                MAX_HOOD_POS
+        ));
 
-        telemetry.addData("[Shooter] Wheel State ", wheelsEnabled);
-        telemetry.addData("[Shooter] Turret Lock ", turretLockEnabled);
-        telemetry.addData("[Shooter] Hood Lock ", hoodLockEnabled);
-        telemetry.addData("[Shooter] Turret Pos: ", getTurretAngle());
-        telemetry.addData("[Shooter] Goal Dist: ", getDistanceToGoal());
-
-        FtcDashboard.getInstance().getTelemetry().addData("Actual Velo : ", wheel1.getVelocity());
-        FtcDashboard.getInstance().getTelemetry().addData("Target Velo: ", customShooterSpeed * 0.9 * MAX_TICKS_PER_S);
-        FtcDashboard.getInstance().getTelemetry().addData("Turret Target: ", customTurretTarget);
-        FtcDashboard.getInstance().getTelemetry().addData("Turret Angle: ", getTurretAngle());
-
-        if(!inLUTRange()) return;
-
-        if(wheelsEnabled) {
-            wheel1.set(getControlledWheelPower(wheelSpeed.get(getDistanceToGoal())));
-            wheel2.set(getControlledWheelPower(wheelSpeed.get(getDistanceToGoal())));
+        if(!turretZeroed) {
+            hasStalled.update();
+            turretMotor.set(turretZeroPower);
+            if(hasStalled.isJustActive()) {
+                turretMotor.resetEncoder();
+                turretMotor.set(0);
+                turretZeroed = true;
+            }
+            return;
         }
 
-        hoodServo.setPosition(Range.scale(wheelSpeed.get(getDistanceToGoal()), 0, 1, MIN_HOOD, MAX_HOOD));
+        if(shooterLock == ShooterGoal.DISABLED) {
+            turretController.setSetPoint(-101);
+            turretMotor.set(Range.clip(
+                    turretController.calculate(getTurretAngle()),
+                    -MAX_TURRET_POWER,
+                    MAX_TURRET_POWER
+            ));
+
+            hoodServo.setPosition(MIN_HOOD_POS);
+            return;
+        }
+
+        // ------------------------------------- Telemetry -------------------------------------- //
+        telemetry.addData("[Shooter] Wheel State ", wheelsEnabled);
+        telemetry.addData("[Shooter] Hood Lock ", hoodLockEnabled);
+        telemetry.addData("[Shooter] Shooter ", shooterLock);
+        telemetry.addData("[Shooter] Turret Angle: ", getTurretAngle());
+        telemetry.addData("[Shooter] Turret Ticks: ", turretMotor.getCurrentPosition());
+        telemetry.addData("[Shooter] GOAL Dist: ", getDistanceToGoal(futurePose.get()));
+        telemetry.addData("[Shooter] GOAL Angle: ", getAngleToGoal());
+
+        // --------------------------------------- Turret --------------------------------------- //
+        Vector curShootingVector = calcShootingVector();
+        if(shooterLock == ShooterGoal.ALLIANCE_GOAL) {
+            turretController.setSetPoint(wheelsEnabled ? getTurretTarget(curShootingVector) : 0);
+        }
+
+        if(shooterLock == ShooterGoal.AUTO_CUSTOM) {
+            turretController.setSetPoint(auto_custom_angle);
+        }
+
+        turretMotor.set(Range.clip(
+                turretController.calculate(getTurretAngle()),
+                -MAX_TURRET_POWER,
+                MAX_TURRET_POWER
+        ));
+
+        if(wheelsEnabled) {
+            wheel1.set(getControlledWheelPower(0.6));
+            wheel2.set(getControlledWheelPower(0.6));
+        }
+
+//        if(!inLUTRange()) {
+//            if(inAuto) {
+//                wheel1.set(getControlledWheelPower(0.58));
+//                wheel2.set(getControlledWheelPower(0.58));
+//            }
+//            return;
+//        }
+//
+//        if(!inLUTRange()) return;
+//
+//        // ---------------------------------------- Hood ---------------------------------------- //
+//        hoodServo.setPosition(Range.scale(
+//                (hoodLockEnabled ? lu_values.getHood(getDistanceToGoal(futurePose.get())) : 0),
+//                0,
+//                1,
+//                MIN_HOOD_POS,
+//                MAX_HOOD_POS
+//        ));
+//
+//        // --------------------------------------- Wheels --------------------------------------- //
+//        if(wheelsEnabled) {
+//            if(small_triangle_accel && atSmallTriangle()) {
+//                wheel1.set(getControlledWheelPower(accel_value));
+//                wheel2.set(getControlledWheelPower(accel_value));
+//                return;
+//            }
+//
+//            double futurePoseDist = getDistanceToGoal(futurePose.get());
+//            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+//            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+//        }
     }
 
+    // ----------------------------------------- Wheels ----------------------------------------- //
     public double getControlledWheelPower(double power) {
         double speed = 0.9 * power * MAX_TICKS_PER_S;
         veloController.setSetPoint(speed);
-        double velocity = veloController.calculate(wheel1.getCorrectedVelocity()) + feedforward.calculate(speed, wheel1.getAcceleration());
+        double velocity = veloController.calculate(-wheel1.getCorrectedVelocity()) +
+                feedforward.calculate(speed, -wheel1.getAcceleration());
+
+        FtcDashboard.getInstance().getTelemetry().addData("Target VEL: ", speed);
+        FtcDashboard.getInstance().getTelemetry().addData("Actual VEL: ", wheel1.getCorrectedVelocity());
+        FtcDashboard.getInstance().getTelemetry().update();
+
         return velocity / MAX_TICKS_PER_S;
     }
 
-    public boolean wheelsAtSpeed() {
-        return Math.abs(veloController.getPositionError()) < 100;
-    }
-
-    public boolean turretAtTarget() {
-        return Math.abs(turretController.getPositionError()) < 2;
-    }
-
-    public boolean inLUTRange() {
-        return getDistanceToGoal() > 43 && getDistanceToGoal() < 138;
+    public boolean accelVelTarget() {
+        return wheel1.getCorrectedVelocity() > 800;
     }
 
     public void enableWheels() {
@@ -174,64 +304,206 @@ public class Shooter extends SubsystemBase {
     }
 
     public void disableWheels() {
+        wheelsEnabled = false;
         wheel1.set(0);
         wheel2.set(0);
-        wheelsEnabled = false;
     }
 
     public boolean areWheelsEnabled() {
         return wheelsEnabled;
     }
 
+    public boolean wheelsAtSpeed() {
+        return Math.abs(veloController.getPositionError()) < 90;
+    }
+
+    // ----------------------------------------- Turret ----------------------------------------- //
     public double getTurretAngle() {
-        return ((turretMotor.getCurrentPosition())%TICKS_PER_FULL_ROTATION)*360.0/TICKS_PER_FULL_ROTATION - turretTrim;
+        if (startReversed) {
+            return turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION) - turretZeroOffsetReversed;
+        }
+
+        return turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION) - turretZeroOffset;
+    }
+
+    public void resetOffset() {
+        turretZeroOffset = startReversed ? 102.5 : 195.5346;
     }
 
     public boolean turretInRange() {
-        return getTurretAngle() > -120 && getTurretAngle() < 72;
+        double angleToGoal = getAngleToGoal();
+        return angleToGoal > MIN_TURRET_ANGLE && angleToGoal < MAX_TURRET_ANGLE;
     }
 
+    public boolean turretAtGoal() {
+        return Math.abs(turretController.getPositionError()) < (atSmallTriangle() ? 1.2 : 0.7);
+    }
 
-    // IK Stuff
-    private double getDistanceToGoal() {
-        Pose pose = curPose.get();
-        double dx = goalPose.getX() - pose.getX();
-        double dy = goalPose.getY() - pose.getY();
+    public boolean turretAtGoal(double threshold) {
+        return Math.abs(turretController.getPositionError()) < threshold;
+    }
+
+    // ---------------------------------------- IK Stuff ---------------------------------------- //
+    public double getDistanceToGoal(Pose posaki) {
+        double dx = goalPose.getX() - posaki.getX();
+        double dy = goalPose.getY() - posaki.getY();
         return Math.hypot(dx, dy);
     }
 
-    public static double wrapDegrees(double angleDeg) { // angle -> (-180, 180)
-        angleDeg = angleDeg % 360.0;
-        if (angleDeg > 180.0) {
-            angleDeg -= 360.0;
-        } else if (angleDeg <= -180.0) {
-            angleDeg += 360.0;
-        }
-        return angleDeg;
+    public double getDistanceToGoal() {
+        double dx = goalPose.getX() - curPose.get().getX();
+        double dy = goalPose.getY() - curPose.get().getY();
+        return Math.hypot(dx, dy);
     }
 
-    public double getAngleToGoal() {
-        Pose pose = curPose.get();
-        double dx = goalPose.getX() - pose.getX();
-        double dy = goalPose.getY() - pose.getY();
+    public double getAngleToGoal() { // true -> goal, false -> obelisk
+        double dx_ref = goalPose.getX() - curPose.get().getX();
+        double dy_ref = goalPose.getY() - curPose.get().getY();
 
+        double targetAngle_ref = Math.toDegrees(Math.atan2(dy_ref, dx_ref));
+        double dx = dx_ref;
+        double dy = dy_ref;
+
+        if(Math.abs(targetAngle_ref) > 70.0) dx += Range.scale(targetAngle_ref, -70.0, -90.0, -1.5, -0.8);
+        if(atSmallTriangle()) dy += 0;
+
+        return Math.toDegrees(Math.atan2(dy, dx));
+    }
+
+    public double getTurretTarget(Vector shooting) {
         double robotHeading = Math.toDegrees(curPose.get().getHeading()) % 360;
         if (robotHeading >= 180) robotHeading -= 360;
         if (robotHeading < -180) robotHeading += 360;
 
-        double relativeAngle = Math.toDegrees(Math.atan2(dy, dx)) - robotHeading;
+        double relativeAngle = Math.toDegrees(shooting.getAngle()) - robotHeading;
         relativeAngle %= 360;
         if (relativeAngle >= 180) relativeAngle -= 360;
         if (relativeAngle < -180) relativeAngle += 360;
 
+        relativeAngle = Range.clip(relativeAngle, MIN_TURRET_ANGLE, MAX_TURRET_ANGLE);
+
         return relativeAngle;
     }
 
-    public void increaseTurretTrim() {
-        turretTrim += 1;
+    public Pose estimateFuturePose(double dt) {
+        Vector robotVelocityVec = new Vector(curPoseVel.get().getX(), curPoseVel.get().getY(), false);
+
+        if(robotVelocityVec.getMagnitude() < 0.5) return curPose.get();
+
+        Vector robotAccelVec = new Vector(curPoseAccel.get().getX(), curPoseAccel.get().getY(), false);
+
+        Vector Ut = VectorMath.scale_vector(robotVelocityVec, dt);
+
+        Vector At = VectorMath.scale_vector(robotAccelVec, 0.5 * (dt * dt));
+
+        Vector futureVector = VectorMath.add_vectors(
+                new Vector(
+                    curPose.get().getX(),
+                    curPose.get().getY(), false
+                ),
+                Ut,
+                At
+        );
+
+        return new Pose(futureVector.getVx(), futureVector.getVy());
     }
 
-    public void decreaseTurretTrim() {
-        turretTrim -= 1;
+    public Vector calcShootingVector() {
+        if(!inLUTRange()) {
+            return new Vector(1, Math.toRadians(getAngleToGoal()), true);
+        }
+
+        double stationary_angle = Math.toRadians(getAngleToGoal());
+        double artifact_velocity = lu_values.getWheel(getDistanceToGoal(futurePose.get()));
+
+        Vector stationaryVec = new Vector(artifact_velocity, stationary_angle, true);
+        Vector robotVelocityVec = new Vector(curPoseVel.get().getX(), curPoseVel.get().getY(), false);
+
+        Vector scaledStationaryVec = VectorMath.scale_vector(stationaryVec, stationaryScale);
+
+        Vector scaledRobotVelocityVec;
+
+        if (!inAuto) {
+            scaledRobotVelocityVec = VectorMath.scale_vector(robotVelocityVec, robotVelocityScale);
+        } else {
+            scaledRobotVelocityVec = VectorMath.scale_vector(robotVelocityVec, robotVelocityScaleAuto);
+        }
+
+        telemetry.addData("[Shooter] Stationary Vector (r, θ): ", "(%.2f, %.2f)", stationaryVec.getMagnitude(), Math.toDegrees(stationaryVec.getAngle()));
+        telemetry.addData("[Shooter] Velocity Vector (x, y): ", "(%.2f, %.2f)", robotVelocityVec.getVx(), robotVelocityVec.getVy());
+        telemetry.addData("[Shooter] Velocity Vector (r, θ): ", "(%.2f, %.2f)", robotVelocityVec.getMagnitude(), Math.toDegrees(robotVelocityVec.getAngle()));
+
+        if(robotVelocityVec.getMagnitude() < 2.0) return stationaryVec;
+
+        return VectorMath.scale_vector(
+                VectorMath.subtract_vectors(scaledStationaryVec, scaledRobotVelocityVec),
+                wheelSpeedFactor
+        );
+    }
+
+    public boolean inLUTRange() {
+        if (inAuto) {
+            return getDistanceToGoal(futurePose.get()) > 24 && getDistanceToGoal(futurePose.get()) < 164.5;
+        }
+
+        return lu_values.inRange(getDistanceToGoal(futurePose.get()));
+    }
+
+    public boolean atSmallTriangle() {
+        return getDistanceToGoal(futurePose.get()) > (325.0/2.54);
+    }
+
+    public void zeroTurret() {
+        turretZeroed = false;
+    }
+
+    public void enableParkingState() {
+        shooterLock = ShooterGoal.DISABLED;
+    }
+
+    public void disableParkingState() {
+        shooterLock = ShooterGoal.ALLIANCE_GOAL;
+    }
+
+    public boolean isParked(){
+        return shooterLock == ShooterGoal.DISABLED;
+    }
+
+    public void increase_turret_offset() { turretZeroOffset += 1.0; }
+    public void decrease_turret_offset() { turretZeroOffset -= 1.0; }
+
+    public void enableObelisk() {
+        //pare mou mia pipa
+    }
+
+    public void disableObelisk() {
+        //pare mou mia pipa
+    }
+
+    public void enableAutoCustom(double customAngle) {
+        shooterLock = ShooterGoal.AUTO_CUSTOM;
+        auto_custom_angle = customAngle;
+    }
+
+    public void enableSmallTriangleAccel() {
+        small_triangle_accel = true;
+    }
+
+    public void disableSmallTriangleAccel() {
+        small_triangle_accel = false;
+    }
+
+    public void closeFinger() {
+        fingerOpen = false;
+        shooterFinger.setPosition(FINGER_CLOSED_POS);
+    }
+
+    public void openFinger() {
+        fingerOpen = true;
+        shooterFinger.setPosition(FINGER_OPENED_POS);
+    }
+
+    public boolean isFingerOpen() {
+        return fingerOpen;
     }
 }

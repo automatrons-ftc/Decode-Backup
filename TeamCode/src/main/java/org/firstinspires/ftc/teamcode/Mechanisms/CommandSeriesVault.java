@@ -44,7 +44,7 @@ public class CommandSeriesVault {
                         new SequentialCommandGroup(
                                 new InstantCommand(intake::disengagePassthough),
                                 new InstantCommand(shooter::enableWheels),
-                                new WaitUntilCommand(shooter::turretAtTarget),
+//                                new WaitUntilCommand(shooter::turretAtTarget),
                                 new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(intake::intake),
                                 new WaitCommand(200),

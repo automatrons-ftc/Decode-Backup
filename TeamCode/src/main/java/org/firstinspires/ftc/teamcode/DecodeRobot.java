@@ -14,12 +14,12 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Hardware.GamepadExEx;
 import org.firstinspires.ftc.teamcode.Hardware.IMUSubsystem;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake;
+//import org.firstinspires.ftc.teamcode.Mechanisms.ShooterBKP;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.MathFunction;
@@ -210,12 +210,9 @@ public class DecodeRobot {
 
         intake = new Intake(robotMap);
 
-        shooter = new Shooter(
-            robotMap,
-            this::getPose,
-            alliance,
-            telemetry
-        );
+        shooter = new Shooter(robotMap, this::getPose, this::getPoseVelocity,
+                () -> new Pose(0, 0, 0), alliance,
+                true, false, false, false);
 
         toolOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ConditionalCommand(
                 new InstantCommand(intake::intake),
@@ -227,6 +224,12 @@ public class DecodeRobot {
                 new InstantCommand(intake::engagePassthough),
                 new InstantCommand(intake::disengagePassthough),
                 () -> !intake.isPassthoughEngaged()
+        ));
+
+        toolOp.getGamepadButton(GamepadKeys.Button.X).whenPressed(new ConditionalCommand(
+                new InstantCommand(shooter::closeFinger),
+                new InstantCommand(shooter::openFinger),
+                () -> shooter.isFingerOpen()
         ));
 
         toolOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
@@ -279,20 +282,20 @@ public class DecodeRobot {
                 () -> intake.getState() == Intake.IntakeState.STOPPED
         ));
 
-        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
-                new InstantCommand(shooter::increaseTurretTrim)
-        );
-
-        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
-                new InstantCommand(shooter::decreaseTurretTrim)
+        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                new InstantCommand(shooter::decrease_turret_offset)
         );
 
         driverOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
-                new InstantCommand(shooter::increaseTurretTrim)
+                new InstantCommand(shooter::increase_turret_offset)
         );
 
-        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
-                new InstantCommand(shooter::decreaseTurretTrim)
+        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                new InstantCommand(shooter::decrease_turret_offset)
+        );
+
+        toolOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+                new InstantCommand(shooter::increase_turret_offset)
         );
     }
 }

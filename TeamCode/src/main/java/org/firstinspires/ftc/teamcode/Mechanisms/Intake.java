@@ -26,6 +26,7 @@ public class Intake extends SubsystemBase {
     private Telemetry telemetry;
 
     private boolean passthoughEngaged = false;
+    public static double PASSTHROUGH_ENGAGED_POS = 0.75, PASSTHROUGH_DISENGAGED_POS = 0.51;
 
     public Intake(RobotMap robotMap) {
         this.intakeMotor = robotMap.getIntakeMotor();
@@ -40,7 +41,7 @@ public class Intake extends SubsystemBase {
         telemetry.addData("[Intake] State ", state);
         telemetry.addData("[Passthough] Engaged ", passthoughEngaged);
 
-        passthough.setPosition(passthoughEngaged ? 0.12 : 0.27);
+        passthough.setPosition(passthoughEngaged ? PASSTHROUGH_ENGAGED_POS : PASSTHROUGH_DISENGAGED_POS);
     }
 
     public void intake() {
