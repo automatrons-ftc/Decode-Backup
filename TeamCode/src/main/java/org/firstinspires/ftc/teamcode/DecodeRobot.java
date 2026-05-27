@@ -233,15 +233,17 @@ public class DecodeRobot {
                 new ConditionalCommand(
                         new SequentialCommandGroup(
                                 new InstantCommand(intake::disengagePassthough),
-                                new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(intake::intake),
-                                new WaitCommand(100),
+                                new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(intake::engagePassthough),
-                                new WaitCommand(1400),
-                                new InstantCommand(intake::disengagePassthough)
+                                new WaitCommand(200),
+                                new InstantCommand(shooter::openFinger),
+                                new WaitCommand(1000),
+                                new InstantCommand(intake::disengagePassthough),
+                                new InstantCommand(shooter::closeFinger)
                         ),
                         new InstantCommand(),
-                        () -> shooter.turretInRange() && shooter.inLUTRange()
+                        () -> (shooter.turretInRange() && shooter.inLUTRange()) || true
                 )
         );
 
@@ -251,41 +253,43 @@ public class DecodeRobot {
                 shooter::areWheelsEnabled
         ));
 
-        driverOp.getGamepadButton(GamepadKeys.Button.A).whenPressed(new ConditionalCommand(
-                new InstantCommand(shooter::disableWheels),
-                new InstantCommand(shooter::enableWheels),
-                shooter::areWheelsEnabled
-        ));
-
-        driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-                new ConditionalCommand(
-                        new SequentialCommandGroup(
-                                new InstantCommand(intake::disengagePassthough),
-                                new WaitUntilCommand(shooter::wheelsAtSpeed),
-                                new InstantCommand(intake::intake),
-                                new WaitCommand(100),
-                                new InstantCommand(intake::engagePassthough),
-                                new WaitCommand(1400),
-                                new InstantCommand(intake::disengagePassthough)
-                        ),
-                        new InstantCommand(),
-                        () -> shooter.turretInRange() && shooter.inLUTRange()
-                )
-        );
-
-        driverOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ConditionalCommand(
-                new InstantCommand(intake::intake),
-                new InstantCommand(intake::stop),
-                () -> intake.getState() == Intake.IntakeState.STOPPED
-        ));
-
-        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
-                new InstantCommand(shooter::decrease_turret_offset)
-        );
-
-        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
-                new InstantCommand(shooter::increase_turret_offset)
-        );
+//        driverOp.getGamepadButton(GamepadKeys.Button.A).whenPressed(new ConditionalCommand(
+//                new InstantCommand(shooter::disableWheels),
+//                new InstantCommand(shooter::enableWheels),
+//                shooter::areWheelsEnabled
+//        ));
+//
+//        driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
+//                new ConditionalCommand(
+//                        new SequentialCommandGroup(
+//                                new InstantCommand(intake::disengagePassthough),
+//                                new InstantCommand(intake::intake),
+//                                new WaitUntilCommand(shooter::wheelsAtSpeed),
+//                                new InstantCommand(intake::engagePassthough),
+//                                new WaitCommand(200),
+//                                new InstantCommand(shooter::openFinger),
+//                                new WaitCommand(1000),
+//                                new InstantCommand(intake::disengagePassthough),
+//                                new InstantCommand(shooter::closeFinger)
+//                        ),
+//                        new InstantCommand(),
+//                        () -> shooter.turretInRange() && shooter.inLUTRange()
+//                )
+//        );
+//
+//        driverOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ConditionalCommand(
+//                new InstantCommand(intake::intake),
+//                new InstantCommand(intake::stop),
+//                () -> intake.getState() == Intake.IntakeState.STOPPED
+//        ));
+//
+//        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+//                new InstantCommand(shooter::decrease_turret_offset)
+//        );
+//
+//        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+//                new InstantCommand(shooter::increase_turret_offset)
+//        );
 
         toolOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
                 new InstantCommand(shooter::decrease_turret_offset)

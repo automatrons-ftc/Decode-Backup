@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.geometry.Pose;
 
+@Config
 public class CodeParameters {
     ////// ----------------------------------- Mechanisms ----------------------------------- //////
     //// ---------------------------------- Intake Constants ---------------------------------- ////
-    public static double PASSTHROUGH_ENGAGED_POS = 0.75, PASSTHROUGH_DISENGAGED_POS = 0.51;
+    public static double PASSTHROUGH_ENGAGED_POS = 0.75, PASSTHROUGH_DISENGAGED_POS = 0.6;
     public static double INTAKE_POWER = 1.0;
 
     //// --------------------------------- Shooter Constants ---------------------------------- ////
@@ -14,7 +16,7 @@ public class CodeParameters {
 
     // ------------------------------------ Turret Constants ------------------------------------ //
     public static double MAX_TURRET_POWER = 1.0;
-    public static double MIN_TURRET_ANGLE = -70.0, MAX_TURRET_ANGLE = 70;
+    public static double MIN_TURRET_ANGLE = -120.0, MAX_TURRET_ANGLE = 120;
     public static double TURRET_ANGLE_MULTIPLIER = 1.0;
     public static double turretZeroCurrentThreshold = 2.0;
     public static double turretZeroOffset = 0;
@@ -29,4 +31,5 @@ public class CodeParameters {
 
 
     ////// ----------------------------------- Autonomous ----------------------------------- //////
+
 }

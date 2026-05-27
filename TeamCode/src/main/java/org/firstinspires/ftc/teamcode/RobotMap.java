@@ -47,7 +47,7 @@ public class RobotMap {
         this.hm = hm;
 
         if(driverOp != null) this.driverOp = new GamepadExEx(driverOp);
-        if(toolOp != null) this.toolOp = new GamepadExEx(toolOp);
+        if(toolOp != null) this.toolOp = new GamepadExEx(driverOp);
 
         hubs = hm.getAll(LynxModule.class);
 

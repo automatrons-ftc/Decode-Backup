@@ -112,9 +112,10 @@ public class Shooter extends SubsystemBase {
 
         this.hoodServo = robotMap.getHoodServo();
         this.shooterFinger = robotMap.getShooterFinger();
+        closeFinger();
 
         this.turretMotor = robotMap.getTurretMotor();
-        turretMotor.setInverted(true);
+        turretMotor.setInverted(false);
         turretMotor.resetEncoder();
         turretZeroed = !doZero;
         turretZeroed = true;
@@ -174,13 +175,13 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        hoodServo.setPosition(Range.scale(
-                0,
-                0,
-                1,
-                CodeParameters.MIN_HOOD_POS,
-                CodeParameters.MAX_HOOD_POS
-        ));
+//        hoodServo.setPosition(Range.scale(
+//                0,
+//                0,
+//                1,
+//                CodeParameters.MIN_HOOD_POS,
+//                CodeParameters.MAX_HOOD_POS
+//        ));
 
         if(!turretZeroed) {
             hasStalled.update();
@@ -230,10 +231,10 @@ public class Shooter extends SubsystemBase {
                 CodeParameters.MAX_TURRET_POWER
         ));
 
-        if(wheelsEnabled) {
-            wheel1.set(getControlledWheelPower(0.6));
-            wheel2.set(getControlledWheelPower(0.6));
-        }
+//        if(wheelsEnabled) {
+//            wheel1.set(getControlledWheelPower(0.6));
+//            wheel2.set(getControlledWheelPower(0.6));
+//        }
 
         if(!inLUTRange()) {
             if(inAuto) {
@@ -348,21 +349,21 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getAngleToGoal() { // true -> goal, false -> obelisk
-        double dx_ref = goalPose.getX() - curPose.get().getX();
-        double dy_ref = goalPose.getY() - curPose.get().getY();
+        double dx = goalPose.getX() - curPose.get().getX();
+        double dy = goalPose.getY() - curPose.get().getY();
 
-        double targetAngle_ref = Math.toDegrees(Math.atan2(dy_ref, dx_ref));
-        double dx = dx_ref;
-        double dy = dy_ref;
+//        double targetAngle_ref = Math.toDegrees(Math.atan2(dy_ref, dx_ref));
+//        double dx = dx_ref;
+//        double dy = dy_ref;
 
-        if(Math.abs(targetAngle_ref) > 70.0) dx += Range.scale(targetAngle_ref, -70.0, -90.0, -1.5, -0.8);
-        if(atSmallTriangle()) dy += 0;
+//        if(Math.abs(targetAngle_ref) > 70.0) dx += Range.scale(targetAngle_ref, -70.0, -90.0, -1.5, -0.8);
+//        if(atSmallTriangle()) dy += 0;
 
-        return Math.toDegrees(Math.atan2(dy, dx));
+        return -Math.toDegrees(Math.atan2(dx, dy));
     }
 
     public double getTurretTarget(Vector shooting) {
-        double robotHeading = Math.toDegrees(curPose.get().getHeading()) % 360;
+        double robotHeading = (Math.toDegrees(curPose.get().getHeading() - 90) % 360);
         if (robotHeading >= 180) robotHeading -= 360;
         if (robotHeading < -180) robotHeading += 360;
 
@@ -373,7 +374,8 @@ public class Shooter extends SubsystemBase {
 
         relativeAngle = Range.clip(relativeAngle, CodeParameters.MIN_TURRET_ANGLE, CodeParameters.MAX_TURRET_ANGLE);
 
-        return relativeAngle;
+//        return relativeAngle;
+        return 0;
     }
 
     public Pose estimateFuturePose(double dt) {
