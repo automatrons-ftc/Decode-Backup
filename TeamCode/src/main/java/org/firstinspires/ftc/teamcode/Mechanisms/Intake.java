@@ -4,9 +4,11 @@ import org.firstinspires.ftc.teamcode.CodeParameters;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Controllers.StateMachine;
 import org.firstinspires.ftc.teamcode.Hardware.MotorExEx;
 import org.firstinspires.ftc.teamcode.RobotMap;
 
@@ -14,6 +16,7 @@ import org.firstinspires.ftc.teamcode.RobotMap;
 public class Intake extends SubsystemBase {
     private final MotorExEx intakeMotor;
     private final ServoImplEx passthough;
+    private final DigitalChannel beam;
 
     public enum IntakeState {
         INTAKE,
@@ -25,10 +28,16 @@ public class Intake extends SubsystemBase {
     private Telemetry telemetry;
     private boolean passthoughEngaged = false;
 
+    private StateMachine intakeGotFull;
+
     public Intake(RobotMap robotMap) {
         this.intakeMotor = robotMap.getIntakeMotor();
         intakeMotor.setZeroPowerBehavior(MotorExEx.ZeroPowerBehavior.FLOAT);
+
         this.passthough = robotMap.getPassthroughServo();
+
+        this.beam = robotMap.getIntakeBeam();
+        this.intakeGotFull = new StateMachine(() -> !beam.getState(), 400);
 
         this.telemetry = robotMap.getTelemetry();
     }
@@ -37,6 +46,9 @@ public class Intake extends SubsystemBase {
     public void periodic() {
         telemetry.addData("[Intake] State ", state);
         telemetry.addData("[Passthough] Engaged ", passthoughEngaged);
+        telemetry.addData("[Intake] Beam Breaked? ", beam.getState());
+
+        intakeGotFull.update();
 
         passthough.setPosition(passthoughEngaged ? CodeParameters.PASSTHROUGH_ENGAGED_POS : CodeParameters.PASSTHROUGH_DISENGAGED_POS);
     }
@@ -70,5 +82,9 @@ public class Intake extends SubsystemBase {
 
     public IntakeState getState() {
         return state;
+    }
+
+    public boolean intakeJustGotFull() {
+        return intakeGotFull.isJustActive();
     }
 }

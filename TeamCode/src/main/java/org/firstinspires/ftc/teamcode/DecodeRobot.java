@@ -19,7 +19,6 @@ import org.firstinspires.ftc.teamcode.Drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Hardware.GamepadExEx;
 import org.firstinspires.ftc.teamcode.Hardware.IMUSubsystem;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake;
-//import org.firstinspires.ftc.teamcode.Mechanisms.ShooterBKP;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.MathFunction;
@@ -202,20 +201,20 @@ public class DecodeRobot {
 
     public void initMechanismsTeleOp(RobotMap robotMap) {
         hasInit = true;
-
-        driverOp.getGamepadButton(GamepadKeys.Button.START).whenPressed(this::resetFieldCentricReference);
-
         intake = new Intake(robotMap);
-
         shooter = new Shooter(robotMap, this::getPose, this::getPoseVelocity,
                 () -> new Pose(0, 0, 0), alliance,
                 true, false, false, false);
+
+        driverOp.getGamepadButton(GamepadKeys.Button.START).whenPressed(this::resetFieldCentricReference);
 
         toolOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ConditionalCommand(
                 new InstantCommand(intake::intake),
                 new InstantCommand(intake::stop),
                 () -> intake.getState() == Intake.IntakeState.STOPPED
         ));
+
+        new Trigger(intake::intakeJustGotFull).whenActive(new InstantCommand(intake::stop));
 
         toolOp.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new ConditionalCommand(
                 new InstantCommand(intake::engagePassthough),
@@ -236,7 +235,7 @@ public class DecodeRobot {
                                 new InstantCommand(intake::intake),
                                 new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(intake::engagePassthough),
-                                new WaitCommand(200),
+//                                new WaitCommand(200),
                                 new InstantCommand(shooter::openFinger),
                                 new WaitCommand(1000),
                                 new InstantCommand(intake::disengagePassthough),
@@ -252,44 +251,6 @@ public class DecodeRobot {
                 new InstantCommand(shooter::enableWheels),
                 shooter::areWheelsEnabled
         ));
-
-//        driverOp.getGamepadButton(GamepadKeys.Button.A).whenPressed(new ConditionalCommand(
-//                new InstantCommand(shooter::disableWheels),
-//                new InstantCommand(shooter::enableWheels),
-//                shooter::areWheelsEnabled
-//        ));
-//
-//        driverOp.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-//                new ConditionalCommand(
-//                        new SequentialCommandGroup(
-//                                new InstantCommand(intake::disengagePassthough),
-//                                new InstantCommand(intake::intake),
-//                                new WaitUntilCommand(shooter::wheelsAtSpeed),
-//                                new InstantCommand(intake::engagePassthough),
-//                                new WaitCommand(200),
-//                                new InstantCommand(shooter::openFinger),
-//                                new WaitCommand(1000),
-//                                new InstantCommand(intake::disengagePassthough),
-//                                new InstantCommand(shooter::closeFinger)
-//                        ),
-//                        new InstantCommand(),
-//                        () -> shooter.turretInRange() && shooter.inLUTRange()
-//                )
-//        );
-//
-//        driverOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ConditionalCommand(
-//                new InstantCommand(intake::intake),
-//                new InstantCommand(intake::stop),
-//                () -> intake.getState() == Intake.IntakeState.STOPPED
-//        ));
-//
-//        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
-//                new InstantCommand(shooter::decrease_turret_offset)
-//        );
-//
-//        driverOp.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
-//                new InstantCommand(shooter::increase_turret_offset)
-//        );
 
         toolOp.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
                 new InstantCommand(shooter::decrease_turret_offset)

@@ -175,14 +175,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-//        hoodServo.setPosition(Range.scale(
-//                0,
-//                0,
-//                1,
-//                CodeParameters.MIN_HOOD_POS,
-//                CodeParameters.MAX_HOOD_POS
-//        ));
-
         if(!turretZeroed) {
             hasStalled.update();
             turretMotor.set(turretZeroPower);
@@ -231,42 +223,50 @@ public class Shooter extends SubsystemBase {
                 CodeParameters.MAX_TURRET_POWER
         ));
 
-//        if(wheelsEnabled) {
-//            wheel1.set(getControlledWheelPower(0.6));
-//            wheel2.set(getControlledWheelPower(0.6));
-//        }
-
-        if(!inLUTRange()) {
-            if(inAuto) {
-                wheel1.set(getControlledWheelPower(0.58));
-                wheel2.set(getControlledWheelPower(0.58));
-            }
-            return;
+        if(wheelsEnabled) {
+            wheel1.set(getControlledWheelPower(0.65));
+            wheel2.set(getControlledWheelPower(0.65));
         }
 
-        if(!inLUTRange()) return;
-
-        // ---------------------------------------- Hood ---------------------------------------- //
         hoodServo.setPosition(Range.scale(
-                (hoodLockEnabled ? lu_values.getHood(getDistanceToGoal(futurePose.get())) : 0),
+                0.3,
                 0,
                 1,
                 CodeParameters.MIN_HOOD_POS,
                 CodeParameters.MAX_HOOD_POS
         ));
 
-        // --------------------------------------- Wheels --------------------------------------- //
-        if(wheelsEnabled) {
-            if(small_triangle_accel && atSmallTriangle()) {
-                wheel1.set(getControlledWheelPower(accel_value));
-                wheel2.set(getControlledWheelPower(accel_value));
-                return;
-            }
-
-            double futurePoseDist = getDistanceToGoal(futurePose.get());
-            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
-            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
-        }
+//        if(!inLUTRange()) {
+//            if(inAuto) {
+//                wheel1.set(getControlledWheelPower(0.58));
+//                wheel2.set(getControlledWheelPower(0.58));
+//            }
+//            return;
+//        }
+//
+//        if(!inLUTRange()) return;
+//
+//        // ---------------------------------------- Hood ---------------------------------------- //
+//        hoodServo.setPosition(Range.scale(
+//                (hoodLockEnabled ? lu_values.getHood(getDistanceToGoal(futurePose.get())) : 0),
+//                0,
+//                1,
+//                CodeParameters.MIN_HOOD_POS,
+//                CodeParameters.MAX_HOOD_POS
+//        ));
+//
+//        // --------------------------------------- Wheels --------------------------------------- //
+//        if(wheelsEnabled) {
+//            if(small_triangle_accel && atSmallTriangle()) {
+//                wheel1.set(getControlledWheelPower(accel_value));
+//                wheel2.set(getControlledWheelPower(accel_value));
+//                return;
+//            }
+//
+//            double futurePoseDist = getDistanceToGoal(futurePose.get());
+//            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+//            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+//        }
     }
 
     // ----------------------------------------- Wheels ----------------------------------------- //
@@ -307,13 +307,6 @@ public class Shooter extends SubsystemBase {
 
     // ----------------------------------------- Turret ----------------------------------------- //
     public double getTurretAngle() {
-//        if (startReversed) {
-//            return (turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION))*CodeParameters.TURRET_ANGLE_MULTIPLIER - CodeParameters.turretZeroOffsetReversed;
-//        }
-//
-//        return (turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION))*CodeParameters.TURRET_ANGLE_MULTIPLIER - CodeParameters.turretZeroOffset;
-
-        // simpler
         return (turretMotor.getCurrentPosition()*(360.0/TICKS_PER_FULL_ROTATION))*CodeParameters.TURRET_ANGLE_MULTIPLIER -
                 (startReversed ? CodeParameters.turretZeroOffsetReversed : CodeParameters.turretZeroOffset);
     }
@@ -466,11 +459,11 @@ public class Shooter extends SubsystemBase {
     public void decrease_turret_offset() { CodeParameters.turretZeroOffset -= 1.0; }
 
     public void enableObelisk() {
-        //pare mou mia pipa
+        // pass
     }
 
     public void disableObelisk() {
-        //pare mou mia pipa
+        // pass
     }
 
     public void enableAutoCustom(double customAngle) {

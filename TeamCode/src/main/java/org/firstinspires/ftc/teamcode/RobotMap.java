@@ -5,6 +5,7 @@ import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -28,7 +29,7 @@ public class RobotMap {
     //// Mechanisms
     //Intake
     private MotorExEx intake;
-    private ServoImplEx intakeArm;
+    private DigitalChannel intakeBeam;
 
     // Passthough
     private ServoImplEx passthoughServo;
@@ -75,6 +76,7 @@ public class RobotMap {
         //// ----------------------------------- Mechanisms ----------------------------------- ////
         // Intake
         intake = new MotorExEx(hm, "intake", Motor.GoBILDA.RPM_1150);
+        intakeBeam = hm.get(DigitalChannel.class, "intake_beam");
 
         // Passthough
         passthoughServo = hm.get(ServoImplEx.class, "ramp");
@@ -137,8 +139,8 @@ public class RobotMap {
     }
 
 
-    public ServoImplEx getIntakeArm() {
-        return intakeArm;
+    public DigitalChannel getIntakeBeam() {
+        return intakeBeam;
     }
 
     public ServoImplEx getPassthroughServo() {
