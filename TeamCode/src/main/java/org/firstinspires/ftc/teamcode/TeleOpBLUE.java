@@ -9,6 +9,6 @@ public class TeleOpBLUE extends TeleOpBase {
     @Override
     public void initialize() {
         super.initialize();
-        initAllianceRelated(DecodeRobot.Alliance.BLUE, new Pose(72, 72, Math.toRadians(90)));
+        initAllianceRelated(DecodeRobot.Alliance.BLUE);
     }
 }

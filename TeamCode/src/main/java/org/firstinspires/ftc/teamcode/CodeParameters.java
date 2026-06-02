@@ -15,11 +15,11 @@ public class CodeParameters {
     public static double MIN_HOOD_POS = 0.9, MAX_HOOD_POS = 0.45;
 
     // ------------------------------------ Turret Constants ------------------------------------ //
-    public static double MAX_TURRET_POWER = 1.0;
-    public static double MIN_TURRET_ANGLE = -120.0, MAX_TURRET_ANGLE = 120;
+    public static double MAX_TURRET_POWER = 0.7;
+    public static double MIN_TURRET_ANGLE = -143.0, MAX_TURRET_ANGLE = 143.0;
     public static double TURRET_ANGLE_MULTIPLIER = 1.0;
-    public static double turretZeroCurrentThreshold = 2.0;
-    public static double turretZeroOffset = 0;
+    public static double turretZeroCurrentThreshold = 1.6;
+    public static double turretZeroOffset = -146.10;
     public static double turretZeroOffsetReversed = -195.5346;
 
     // ----------------------------- Goal Poses for Auto Targeting ------------------------------ //

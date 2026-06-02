@@ -234,9 +234,9 @@ public class DecodeRobot {
                                 new InstantCommand(intake::disengagePassthough),
                                 new InstantCommand(intake::intake),
                                 new WaitUntilCommand(shooter::wheelsAtSpeed),
-                                new InstantCommand(intake::engagePassthough),
-//                                new WaitCommand(200),
                                 new InstantCommand(shooter::openFinger),
+                                new WaitCommand(200),
+                                new InstantCommand(intake::engagePassthough),
                                 new WaitCommand(1000),
                                 new InstantCommand(intake::disengagePassthough),
                                 new InstantCommand(shooter::closeFinger)
