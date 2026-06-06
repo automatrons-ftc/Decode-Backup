@@ -100,7 +100,8 @@ public class DecodeRobot {
             drivetrainStrafe(),
             drivetrainForward(),
             drivetrainTurn(),
-            getHeading()-(getAlliance() == Alliance.RED ? 0 : 180)-yawDriverRelativeOffset,
+    Math.toDegrees(getPose().getHeading())-(getAlliance() == Alliance.RED ? 0 : 180)-yawDriverRelativeOffset,
+//            getFieldCentricHeading(),
             driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)
         );
     }
@@ -125,7 +126,7 @@ public class DecodeRobot {
     }
 
     public void resetFieldCentricReference() {
-        yawDriverRelativeOffset = getHeading();
+        yawDriverRelativeOffset = getHeading()-(getAlliance() == Alliance.RED ? 0 : 180);
     }
 
     public void setAutoEnabled(boolean enabled) {
@@ -242,7 +243,7 @@ public class DecodeRobot {
                                 new InstantCommand(shooter::closeFinger)
                         ),
                         new InstantCommand(),
-                        () -> (shooter.turretInRange() && shooter.inLUTRange()) || true
+                        () -> shooter.turretInRange() && shooter.inLUTRange() && shooter.areWheelsEnabled()
                 )
         );
 

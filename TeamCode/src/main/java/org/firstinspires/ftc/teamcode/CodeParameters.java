@@ -13,13 +13,14 @@ public class CodeParameters {
     //// --------------------------------- Shooter Constants ---------------------------------- ////
     // ------------------------------------- Hood Constants ------------------------------------- //
     public static double MIN_HOOD_POS = 0.9, MAX_HOOD_POS = 0.45;
+    public static double MIN_HOOD_CORRECTION = 0.0, MAX_HOOD_CORRECTION = 0.115;
 
     // ------------------------------------ Turret Constants ------------------------------------ //
-    public static double MAX_TURRET_POWER = 0.7;
+    public static double MAX_TURRET_POWER = 1.0;
     public static double MIN_TURRET_ANGLE = -143.0, MAX_TURRET_ANGLE = 143.0;
     public static double TURRET_ANGLE_MULTIPLIER = 1.0;
     public static double turretZeroCurrentThreshold = 1.6;
-    public static double turretZeroOffset = -146.10;
+    public static double turretZeroOffset = -147.0;
     public static double turretZeroOffsetReversed = -195.5346;
 
     // ----------------------------- Goal Poses for Auto Targeting ------------------------------ //
@@ -27,7 +28,7 @@ public class CodeParameters {
     public static Pose BLUEGoalPose = new Pose(3.0, 141.0, 0);
 
     // ----------------------------------------- Finger ----------------------------------------- //
-    public static double FINGER_OPENED_POS = 0.918, FINGER_CLOSED_POS = 0.755;
+    public static double FINGER_OPENED_POS = 0.9, FINGER_CLOSED_POS = 0.72;
 
 
     ////// ----------------------------------- Autonomous ----------------------------------- //////

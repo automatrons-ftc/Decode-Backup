@@ -90,6 +90,8 @@ public class Shooter extends SubsystemBase {
 
     private boolean fingerOpen = false;
 
+    public static double closeMult = 0.98;
+
     public Shooter(RobotMap robotMap, Supplier<Pose> curPose, Supplier<Pose> curPoseVel,
                    DecodeRobot.Alliance alliance, boolean doZero) {
 
@@ -153,9 +155,9 @@ public class Shooter extends SubsystemBase {
         turretController = new PIDFEx(coeffsTurret);
 
         coeffsVelo = new PIDFExCoeffs(
-                23,
+                8,
                 0.0,
-                0.05,
+                0.04,
                 0.0,
                 0.0,
                 3,
@@ -222,19 +224,6 @@ public class Shooter extends SubsystemBase {
                 CodeParameters.MAX_TURRET_POWER
         ));
 
-//        if(wheelsEnabled) {
-//            wheel1.set(getControlledWheelPower(0.7));
-//            wheel2.set(getControlledWheelPower(0.7));
-//        }
-//
-//        hoodServo.setPosition(Range.scale(
-//                0.6,
-//                0,
-//                1,
-//                CodeParameters.MIN_HOOD_POS,
-//                CodeParameters.MAX_HOOD_POS
-//        ));
-
         if(!inLUTRange()) {
             if(inAuto) {
                 wheel1.set(getControlledWheelPower(0.58));
@@ -243,13 +232,12 @@ public class Shooter extends SubsystemBase {
             return;
         }
 
-        if(!inLUTRange()) return;
-
+        double futurePoseDist = getDistanceToGoal(futurePose.get());
         // ---------------------------------------- Hood ---------------------------------------- //
         hoodServo.setPosition(Range.scale(
-                (hoodLockEnabled
-                        ?
-                        Range.clip(lu_values.getHood(getDistanceToGoal(futurePose.get())) + 0.15, 0, 1) : 0),
+                Range.clip(lu_values.getHood(
+                        getDistanceToGoal(futurePose.get())
+                ) - hoodOffsetVelCorrection(lu_values.getWheel(futurePoseDist)), 0, 1),
                 0,
                 1,
                 CodeParameters.MIN_HOOD_POS,
@@ -264,9 +252,8 @@ public class Shooter extends SubsystemBase {
                 return;
             }
 
-            double futurePoseDist = getDistanceToGoal(futurePose.get());
-            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
-            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)));
+            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
+            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
         }
     }
 
@@ -278,10 +265,22 @@ public class Shooter extends SubsystemBase {
                 feedforward.calculate(speed, -wheel1.getAcceleration());
 
         FtcDashboard.getInstance().getTelemetry().addData("Target VEL: ", speed);
-        FtcDashboard.getInstance().getTelemetry().addData("Actual VEL: ", wheel1.getCorrectedVelocity());
+        FtcDashboard.getInstance().getTelemetry().addData("Actual VEL: ", -wheel1.getCorrectedVelocity());
         FtcDashboard.getInstance().getTelemetry().update();
 
         return velocity / MAX_TICKS_PER_S;
+    }
+
+    public double hoodOffsetVelCorrection(double targetPower) {
+        if(!atSmallTriangle() || !fingerOpen) return -0.1;
+
+        double target_speed = 0.9 * targetPower * MAX_TICKS_PER_S;
+        double velocityOffset = target_speed-(-wheel1.getCorrectedVelocity());
+
+        velocityOffset = Range.clip(velocityOffset, 0, 300);
+        FtcDashboard.getInstance().getTelemetry().addData("Vel Offset: ", velocityOffset);
+
+        return Range.scale(velocityOffset, 0, 300, CodeParameters.MIN_HOOD_CORRECTION, CodeParameters.MAX_HOOD_CORRECTION);
     }
 
     public boolean accelVelTarget() {
@@ -342,16 +341,15 @@ public class Shooter extends SubsystemBase {
         return Math.hypot(dx, dy);
     }
 
-    public double getAngleToGoal() { // true -> goal, false -> obelisk
-        double dx = goalPose.getX() - curPose.get().getX();
-        double dy = goalPose.getY() - curPose.get().getY();
+    public double getAngleToGoal() {
+        double dx_ref = goalPose.getX() - curPose.get().getX();
+        double dy_ref = goalPose.getY() - curPose.get().getY();
 
-//        double targetAngle_ref = Math.toDegrees(Math.atan2(dy_ref, dx_ref));
-//        double dx = dx_ref;
-//        double dy = dy_ref;
+        double targetAngle_ref = Math.toDegrees(Math.atan2(dy_ref, dx_ref));
+        double dx = dx_ref;
+        double dy = dy_ref;
 
-//        if(Math.abs(targetAngle_ref) > 70.0) dx += Range.scale(targetAngle_ref, -70.0, -90.0, -1.5, -0.8);
-//        if(atSmallTriangle()) dy += 0;
+        if(Math.abs(targetAngle_ref) > 70.0) dx += Range.scale(targetAngle_ref, -70.0, -90.0, -1.5, -0.8);
 
         return -Math.toDegrees(Math.atan2(dx, dy));
     }
@@ -429,7 +427,7 @@ public class Shooter extends SubsystemBase {
 
     public boolean inLUTRange() {
         if (inAuto) {
-            return getDistanceToGoal(futurePose.get()) > 24 && getDistanceToGoal(futurePose.get()) < 164.5;
+            return getDistanceToGoal(futurePose.get()) > 24 && getDistanceToGoal(futurePose.get()) < 163.0;
         }
 
         return lu_values.inRange(getDistanceToGoal(futurePose.get()));

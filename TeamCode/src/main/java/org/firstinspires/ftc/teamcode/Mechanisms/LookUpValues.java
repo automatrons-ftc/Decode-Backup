@@ -46,33 +46,58 @@ public class LookUpValues {
             hoodAngle.add(142.89, 0.64);
             hoodAngle.add(153.9, 0.64);
             hoodAngle.add(162.2, 0.64);
+
+            wheelSpeed.createLUT();
+            hoodAngle.createLUT();
             return;
         }
 
         wheelSpeed.add(23.92697, 0.9);
-        wheelSpeed.add(49.58, 0.552);
-        wheelSpeed.add(62.66, 0.587);
-        wheelSpeed.add(77.99, 0.616);
-        wheelSpeed.add(86.54, 0.635);
-        wheelSpeed.add(103.47, 0.696);
-        wheelSpeed.add(118.3, 0.78);
-        wheelSpeed.add(133.2, 0.832);
-        wheelSpeed.add(142.94, 0.83);
-        wheelSpeed.add(151.37, 0.856);
-        wheelSpeed.add(164.46, 0.891);
-
+        wheelSpeed.add(40.52, 0.52);
+        wheelSpeed.add(54.7, 0.56);
+        wheelSpeed.add(69.21, 0.605);
+        wheelSpeed.add(92.7, 0.675);
+        wheelSpeed.add(110.51, 0.748);
+        wheelSpeed.add(128.5, 0.816);
+        wheelSpeed.add(141.41, 0.865);
+        wheelSpeed.add(155.87, 0.9);
+        wheelSpeed.add(163.08, 0.904);
 
         hoodAngle.add(23.92697, 0.0);
-        hoodAngle.add(49.58, 0.0);
-        hoodAngle.add(62.66, 0.17);
-        hoodAngle.add(77.99, 0.23);
-        hoodAngle.add(86.54, 0.31);
-        hoodAngle.add(103.47, 0.41);
-        hoodAngle.add(118.3, 0.61);
-        hoodAngle.add(133.2, 0.7);
-        hoodAngle.add(142.94, 0.63);
-        hoodAngle.add(151.37, 0.7);
-        hoodAngle.add(164.46, 0.75);
+        hoodAngle.add(40.52, 0.0);
+        hoodAngle.add(54.7, 0.4);
+        hoodAngle.add(69.21, 0.65);
+        hoodAngle.add(92.7, 0.76);
+        hoodAngle.add(110.51, 0.86);
+        hoodAngle.add(128.5, 0.93);
+        hoodAngle.add(141.41, 1.0);
+        hoodAngle.add(155.87, 1.0);
+        hoodAngle.add(163.08, 1.0);
+
+//        wheelSpeed.add(23.92697, 0.9);
+//        wheelSpeed.add(49.58, 0.552);
+//        wheelSpeed.add(62.66, 0.587);
+//        wheelSpeed.add(77.99, 0.616);
+//        wheelSpeed.add(86.54, 0.635);
+//        wheelSpeed.add(103.47, 0.696);
+//        wheelSpeed.add(118.3, 0.78);
+//        wheelSpeed.add(133.2, 0.832);
+//        wheelSpeed.add(142.94, 0.83);
+//        wheelSpeed.add(151.37, 0.856);
+//        wheelSpeed.add(164.46, 0.891);
+//
+//
+//        hoodAngle.add(23.92697, 0.0);
+//        hoodAngle.add(49.58, 0.0);
+//        hoodAngle.add(62.66, 0.17);
+//        hoodAngle.add(77.99, 0.23);
+//        hoodAngle.add(86.54, 0.31);
+//        hoodAngle.add(103.47, 0.41);
+//        hoodAngle.add(118.3, 0.61);
+//        hoodAngle.add(133.2, 0.7);
+//        hoodAngle.add(142.94, 0.63);
+//        hoodAngle.add(151.37, 0.7);
+//        hoodAngle.add(164.46, 0.75);
 
         wheelSpeed.createLUT();
         hoodAngle.createLUT();
@@ -91,6 +116,6 @@ public class LookUpValues {
             return (dist > 48.4 && dist < 162.19);
         }
 
-        return (dist > 49.59 && dist < 164.3);
+        return (dist > 49.59 && dist < 163.0);
     }
 }
