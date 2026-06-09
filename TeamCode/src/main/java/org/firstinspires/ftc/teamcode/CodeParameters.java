@@ -30,6 +30,10 @@ public class CodeParameters {
     // ----------------------------------------- Finger ----------------------------------------- //
     public static double FINGER_OPENED_POS = 0.9, FINGER_CLOSED_POS = 0.72;
 
+    // --------------------------------------- Indicator ---------------------------------------- //
+    public static double BLACK_COLOR = 0.0, RED_COLOR = 0.278, GREEN_COLOR = 0.47;
+    public static int BLINKING_FREQUENCY = 2; // Hz
+
 
     ////// ----------------------------------- Autonomous ----------------------------------- //////
 

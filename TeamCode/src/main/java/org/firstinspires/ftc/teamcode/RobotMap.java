@@ -38,6 +38,9 @@ public class RobotMap {
     MotorExEx wheel1, wheel2, turretMotor;
     ServoImplEx hoodServo, shooterFinger;
 
+    // Indicator
+    ServoImplEx indicator;
+
     public RobotMap(HardwareMap hm, Telemetry telemetry) {
         this(hm, telemetry, null, null);
     }
@@ -166,6 +169,10 @@ public class RobotMap {
 
     public ServoImplEx getShooterFinger() {
         return shooterFinger;
+    }
+
+    public ServoImplEx getIndicator() {
+        return indicator;
     }
 
     public HardwareMap getHm() {

@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.Drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.Drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Hardware.GamepadExEx;
 import org.firstinspires.ftc.teamcode.Hardware.IMUSubsystem;
+import org.firstinspires.ftc.teamcode.Mechanisms.IndicatorSubsystem;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake;
 import org.firstinspires.ftc.teamcode.Mechanisms.Shooter;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -45,6 +46,7 @@ public class DecodeRobot {
     // Mechanisms
     protected Intake intake;
     protected Shooter shooter;
+    protected IndicatorSubsystem indicator;
 
     protected MotifStorage.MotifState motif;
 
@@ -206,16 +208,27 @@ public class DecodeRobot {
         shooter = new Shooter(robotMap, this::getPose, this::getPoseVelocity,
                 () -> new Pose(0, 0, 0), alliance,
                 true, false, false, false);
+        indicator = new IndicatorSubsystem(robotMap);
+
 
         driverOp.getGamepadButton(GamepadKeys.Button.START).whenPressed(this::resetFieldCentricReference);
 
         toolOp.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(new ConditionalCommand(
-                new InstantCommand(intake::intake),
-                new InstantCommand(intake::stop),
+                new SequentialCommandGroup(
+                        new InstantCommand(intake::intake),
+                        new InstantCommand(() -> indicator.setState(IndicatorSubsystem.IndicatorState.INTAKING))
+                ),
+                new SequentialCommandGroup(
+                        new InstantCommand(intake::stop),
+                        new InstantCommand(() -> indicator.setState(IndicatorSubsystem.IndicatorState.IDLE))
+                ),
                 () -> intake.getState() == Intake.IntakeState.STOPPED
         ));
 
-        new Trigger(intake::intakeJustGotFull).whenActive(new InstantCommand(intake::stop));
+        new Trigger(intake::intakeJustGotFull).whenActive(new SequentialCommandGroup(
+                new InstantCommand(intake::stop),
+                new InstantCommand(() -> indicator.setState(IndicatorSubsystem.IndicatorState.FULL))
+        ));
 
         toolOp.getGamepadButton(GamepadKeys.Button.Y).whenPressed(new ConditionalCommand(
                 new InstantCommand(intake::engagePassthough),
@@ -236,11 +249,13 @@ public class DecodeRobot {
                                 new InstantCommand(intake::intake),
                                 new WaitUntilCommand(shooter::wheelsAtSpeed),
                                 new InstantCommand(shooter::openFinger),
+                                new InstantCommand(() -> indicator.setState(IndicatorSubsystem.IndicatorState.IDLE)),
                                 new WaitCommand(200),
                                 new InstantCommand(intake::engagePassthough),
                                 new WaitCommand(1000),
                                 new InstantCommand(intake::disengagePassthough),
-                                new InstantCommand(shooter::closeFinger)
+                                new InstantCommand(shooter::closeFinger),
+                                new InstantCommand(() -> indicator.setState(IndicatorSubsystem.IndicatorState.INTAKING))
                         ),
                         new InstantCommand(),
                         () -> shooter.turretInRange() && shooter.inLUTRange() && shooter.areWheelsEnabled()
