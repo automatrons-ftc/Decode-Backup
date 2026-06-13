@@ -31,32 +31,66 @@ public class IndicatorSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         telemetry.addData("[Indicator] State ", state);
+        telemetry.addData("[Indicator] Timer ", stateTimer.getElapsedTimeSeconds());
 
         if(state != previousState) stateTimer.resetTimer();
 
+//        switch (state) {
+//            case INTAKING:
+//                if (stateTimer.getElapsedTimeSeconds() % 1.0 < 0.5) {
+//                    indicator.setPosition(CodeParameters.RED_COLOR);
+//                } else {
+//                    indicator.setPosition(CodeParameters.BLACK_COLOR);
+//                }
+//                break;
+//            case FULL:
+//                if (stateTimer.getElapsedTimeSeconds() % 1.0 < 0.5) {
+//                    indicator.setPosition(CodeParameters.GREEN_COLOR);
+//                } else {
+//                    indicator.setPosition(CodeParameters.BLACK_COLOR);
+//                }
+//                break;
+//            case IDLE:
+//                indicator.setPosition(CodeParameters.BLACK_COLOR);
+//                break;
+//        }
+
+//        switch (state) {
+//            case INTAKING:
+//                if (stateTimer.getElapsedTimeSeconds() % 0.5 < 0.25) {
+//                    indicator.setPosition(0.3);
+//                } else {
+//                    indicator.setPosition(0.0);
+//                }
+//                break;
+//            case FULL:
+//                if (stateTimer.getElapsedTimeSeconds() % 0.5 < 0.25) {
+//                    indicator.setPosition(0.5);
+//                } else {
+//                    indicator.setPosition(0.0);
+//                }
+//                break;
+//            case IDLE:
+//                indicator.setPosition(0.0);
+//                break;
+//        }
+
         switch (state) {
             case INTAKING:
-                if (stateTimer.getElapsedTimeSeconds() % 2.0*(1.0/CodeParameters.BLINKING_FREQUENCY) < (1.0/CodeParameters.BLINKING_FREQUENCY)) {
-                    indicator.setPosition(CodeParameters.RED_COLOR);
-                } else {
-                    indicator.setPosition(CodeParameters.BLACK_COLOR);
-                }
+                indicator.setPosition(CodeParameters.RED_COLOR);
                 break;
             case FULL:
-                if (stateTimer.getElapsedTimeSeconds() % 2.0*(1.0/CodeParameters.BLINKING_FREQUENCY) < (1.0/CodeParameters.BLINKING_FREQUENCY)) {
-                    indicator.setPosition(CodeParameters.GREEN_COLOR);
-                } else {
-                    indicator.setPosition(CodeParameters.BLACK_COLOR);
-                }
+                indicator.setPosition(CodeParameters.GREEN_COLOR);
                 break;
             case IDLE:
                 indicator.setPosition(CodeParameters.BLACK_COLOR);
                 break;
         }
+
+        previousState = state;
     }
 
     public void setState(IndicatorState newState) {
-        previousState = state;
         state = newState;
     }
 

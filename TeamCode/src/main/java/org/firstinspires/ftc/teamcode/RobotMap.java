@@ -79,7 +79,7 @@ public class RobotMap {
         //// ----------------------------------- Mechanisms ----------------------------------- ////
         // Intake
         intake = new MotorExEx(hm, "intake", Motor.GoBILDA.RPM_1150);
-        intakeBeam = hm.get(DigitalChannel.class, "intake_beam");
+        intakeBeam = hm.get(DigitalChannel.class, "beam");
 
         // Passthough
         passthoughServo = hm.get(ServoImplEx.class, "ramp");
@@ -91,6 +91,8 @@ public class RobotMap {
 
         hoodServo = hm.get(ServoImplEx.class, "hoodServo");
         shooterFinger = hm.get(ServoImplEx.class, "shooter_finger");
+
+        indicator = hm.get(ServoImplEx.class, "led");
     }
 
     // ---------------------------------------- Gamepads ---------------------------------------- //

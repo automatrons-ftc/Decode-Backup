@@ -39,7 +39,7 @@ public class Constants {
             .useSecondaryHeadingPIDF(true)
 
             .headingPIDFCoefficients(new PIDFCoefficients(1.8, 0, 0.08, 0.01))
-            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(2,0.1,0.12,0.01))
+            .secondaryHeadingPIDFCoefficients(new PIDFCoefficients(2,0.1,0.14,0.01))
 
             .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.07, 0.0562888, 0.001708409)) // (kP, kLinear, kQuadratic)
 

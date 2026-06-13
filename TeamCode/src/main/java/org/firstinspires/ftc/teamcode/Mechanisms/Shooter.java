@@ -40,10 +40,10 @@ public class Shooter extends SubsystemBase {
     private final int TICKS_PER_FULL_ROTATION = (int)(MOTOR_TICKS_PER_REV * GEAR_RATIO);
 
     // IK (Vectoring)
-    private static final double
+    public static double
         stationaryScale = 1.0,
-        robotVelocityScale = 0.00492,
-        robotVelocityScaleAuto = 0.003,
+        robotVelocityScale = 0.00382,
+        robotVelocityScaleAuto = 0.00372,
         wheelSpeedFactor = 1.0;
 
     private double poseEstimation_dt = 0.21;
@@ -171,7 +171,7 @@ public class Shooter extends SubsystemBase {
 
         poseEstimation_dt = inAuto ? 0.34 : 0.21;
 
-        enableWheels();
+//        enableWheels();
     }
 
     @Override
@@ -252,8 +252,8 @@ public class Shooter extends SubsystemBase {
                 return;
             }
 
-            wheel1.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
-            wheel2.set(getControlledWheelPower(lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
+            wheel1.set(getControlledWheelPower((!inAuto ? 1.0 : 0.999)*lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
+            wheel2.set(getControlledWheelPower((!inAuto ? 1.0 : 0.999)*lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
         }
     }
 
@@ -401,7 +401,7 @@ public class Shooter extends SubsystemBase {
         double artifact_velocity = lu_values.getWheel(getDistanceToGoal(futurePose.get()));
 
         Vector stationaryVec = new Vector(artifact_velocity, stationary_angle, true);
-        Vector robotVelocityVec = new Vector(curPoseVel.get().getX(), curPoseVel.get().getY(), false);
+        Vector robotVelocityVec = new Vector(-curPoseVel.get().getX(), curPoseVel.get().getY(), false);
 
         Vector scaledStationaryVec = VectorMath.scale_vector(stationaryVec, stationaryScale);
 
