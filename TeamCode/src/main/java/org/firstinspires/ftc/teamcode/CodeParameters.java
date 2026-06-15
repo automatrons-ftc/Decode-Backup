@@ -34,11 +34,12 @@ public class CodeParameters {
     public static double BLACK_COLOR = 0.0, RED_COLOR = 0.3, GREEN_COLOR = 0.47;
 
     ////// ----------------------------------- Autonomous ----------------------------------- //////
-    public static long GATE_WAIT_TIME = 1800;
+    public static long GATE_WAIT_TIME = 2200;
     // ---------------------------------------- RED GATE ---------------------------------------- //
     public static Pose RED_START_POSE = new Pose(118, 126, Math.toRadians(46));
     public static Pose RED_SHOOT_PRELOADS_POSE = new Pose(91.4, 92.3, Math.toRadians(46));
-    public static Pose RED_STACK2_POSE = new Pose(133.2, 59, 0);
+    public static Pose RED_STACK2_POSE = new Pose(132.4, 59, 0);
+    public static Pose RED_OPEN_ALLY = new Pose(124.8, 63.2, 0);
     public static Pose RED_GATE_POSE = new Pose(131.2, 59.6, Math.toRadians(35));
     public static Pose RED_SHOOT_POSE = new Pose(87, 80, Math.toRadians(322));
     public static Pose RED_STACK1_POSE = new Pose(125, 83.4, 0);

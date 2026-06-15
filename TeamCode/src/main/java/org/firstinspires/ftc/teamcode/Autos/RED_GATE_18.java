@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Autos;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
@@ -81,10 +82,18 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.StartToShootPreload, 1, false),
                 commandVault.shootingProcAuto(),
                 commandVault.startIntake(),
-                new FollowerCommand(follower, paths.ShootPreloadToStack2, 1, false),
-                commandVault.stopIntake(),
                 new ParallelCommandGroup(
-                        new FollowerCommand(follower, paths.Stack2ToShoot,1, false),
+                        new FollowerCommand(follower, paths.ShootPreloadToStack2, 1, false)
+//                        new SequentialCommandGroup(
+//                                new WaitUntilCommand(() -> getPose().getX() > 99),
+//                                new InstantCommand(() -> follower.setMaxPower(0.6))
+//                        )
+                ),
+                commandVault.stopIntake(),
+//                new InstantCommand(() -> follower.setMaxPower(1.0)),
+                new FollowerCommand(follower, paths.Stack2ToOPENALLY, 1, false),
+                new ParallelCommandGroup(
+                        new FollowerCommand(follower, paths.OPENALLYToShoot,1, false),
                         new SequentialCommandGroup(
                                 new WaitUntilCommand(() -> follower.atPose(CodeParameters.RED_SHOOT_POSE, CodeParameters.SHOOTING_TOLERANCE, CodeParameters.SHOOTING_TOLERANCE)),
                                 commandVault.shootingProcAuto()
@@ -158,7 +167,8 @@ public class RED_GATE_18 extends CommandOpMode {
         public PathChain
                 StartToShootPreload,
                 ShootPreloadToStack2,
-                Stack2ToShoot,
+                Stack2ToOPENALLY,
+                OPENALLYToShoot,
                 ShootToGate,
                 GateToShoot,
                 ShootToStack1,
@@ -193,24 +203,23 @@ public class RED_GATE_18 extends CommandOpMode {
                     ))
                     .build();
 
-            Stack2ToShoot = follower.pathBuilder().addPath(
+
+
+            Stack2ToOPENALLY = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     CodeParameters.RED_STACK2_POSE,
-                                    new Pose(99, 58),
+                                    new Pose(116, 61, 0),
+                                    CodeParameters.RED_OPEN_ALLY
+                            )
+                    ).setConstantHeadingInterpolation(0)
+                    .build();
+
+            OPENALLYToShoot = follower.pathBuilder().addPath(
+                            new BezierLine(
+                                    CodeParameters.RED_OPEN_ALLY,
                                     CodeParameters.RED_SHOOT_POSE
                             )
-                    ).setHeadingInterpolation(HeadingInterpolator.piecewise(
-                            new HeadingInterpolator.PiecewiseNode(
-                                    0,
-                                    .2,
-                                    HeadingInterpolator.linear(CodeParameters.RED_STACK2_POSE.getHeading(), CodeParameters.RED_SHOOT_POSE.getHeading())
-                            ),
-                            new HeadingInterpolator.PiecewiseNode(
-                                    .2,
-                                    1,
-                                    HeadingInterpolator.constant(CodeParameters.RED_SHOOT_POSE.getHeading()
-                            )
-                    )))
+                    ).setConstantHeadingInterpolation(0)
                     .build();
 
             ShootToGate = follower.pathBuilder().addPath(
