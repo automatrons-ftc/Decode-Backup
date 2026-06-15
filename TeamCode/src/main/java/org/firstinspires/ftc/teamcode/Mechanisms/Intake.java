@@ -37,7 +37,7 @@ public class Intake extends SubsystemBase {
         this.passthough = robotMap.getPassthroughServo();
 
         this.beam = robotMap.getIntakeBeam();
-        this.intakeGotFull = new StateMachine(() -> !beam.getState(), 350);
+        this.intakeGotFull = new StateMachine(() -> !beam.getState(), 280);
 
         this.telemetry = robotMap.getTelemetry();
     }

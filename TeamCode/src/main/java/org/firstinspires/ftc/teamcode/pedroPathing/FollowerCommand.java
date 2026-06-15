@@ -37,13 +37,6 @@ public class FollowerCommand extends CommandBase {
         follower.followPath(path, velocity, holdEnd);
     }
 
-//    @Override
-//    public void end(boolean interrupted) {
-//        if(!interrupted) return;
-//
-//        follower.breakFollowing();
-//    }
-
     public boolean isFinished() {
         if (roll) {
             if (follower.getCurrentTValue() >= 0.95) {
@@ -53,5 +46,6 @@ public class FollowerCommand extends CommandBase {
         }
 
         return !follower.isBusy();
+//        return follower.getCurrentTValue() > 0.97;
     }
 }
