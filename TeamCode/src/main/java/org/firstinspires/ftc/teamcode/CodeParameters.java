@@ -13,19 +13,19 @@ public class CodeParameters {
     //// --------------------------------- Shooter Constants ---------------------------------- ////
     // ------------------------------------- Hood Constants ------------------------------------- //
     public static double MIN_HOOD_POS = 0.9, MAX_HOOD_POS = 0.45;
-    public static double MIN_HOOD_CORRECTION = 0.0, MAX_HOOD_CORRECTION = 0.115;
+    public static double MIN_HOOD_CORRECTION = 0.0, MAX_HOOD_CORRECTION = 0.125;
 
     // ------------------------------------ Turret Constants ------------------------------------ //
     public static double MAX_TURRET_POWER = 1.0;
     public static double MIN_TURRET_ANGLE = -143.0, MAX_TURRET_ANGLE = 143.0;
     public static double TURRET_ANGLE_MULTIPLIER = 1.0;
     public static double turretZeroCurrentThreshold = 1.6;
-    public static double turretZeroOffset = -147.0;
+    public static double turretZeroOffset = -146.0;
     public static double turretZeroOffsetReversed = -195.5346;
 
     // ----------------------------- Goal Poses for Auto Targeting ------------------------------ //
-    public static Pose REDGoalPose = new Pose(141.0, 141.0, 0);
-    public static Pose BLUEGoalPose = new Pose(3.0, 141.0, 0);
+    public static Pose REDGoalPose = new Pose(139, 141.0, 0);
+    public static Pose BLUEGoalPose = new Pose(5.0, 141.0, 0);
 
     // ----------------------------------------- Finger ----------------------------------------- //
     public static double FINGER_OPENED_POS = 0.9, FINGER_CLOSED_POS = 0.72;
@@ -45,4 +45,17 @@ public class CodeParameters {
     public static Pose RED_STACK1_POSE = new Pose(125, 83.4, 0);
     public static Pose RED_PARK_POSE = new Pose(89, 108, Math.toRadians(305));
     public static double SHOOTING_TOLERANCE = 7.5;
+
+    public static double[] RED_GATE_TURRET_ANGLES = {1, 45, 85, 85, 85, 85}; // PRELOADS, STACK2, GATE, GATE, GATE, PARK
+
+    // ---------------------------------------- BLUE GATE --------------------------------------- //
+
+    // ---------------------------------------- RED FAR ----------------------------------------- //
+    public static Pose RED_START_POSE_FAR = new Pose(90, 8.25, Math.toRadians(90));
+    public static Pose RED_SHOOT_PRELOADS_POSE_FAR = new Pose(96-10.25, 22, Math.toRadians(90));
+    public static Pose RED_STACK3_POSE = new Pose(132.2, 36, 0);
+    public static Pose RED_SHOOT_POSE_FAR = new Pose(86, 21, 0);
+    public static Pose RED_HP_POSE = new Pose(132.2, 9.8, 0);
+    public static Pose RED_PARK_POSE_FAR = new Pose(92, 24, 0);
+
 }

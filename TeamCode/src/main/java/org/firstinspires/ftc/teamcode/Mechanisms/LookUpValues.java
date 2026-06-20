@@ -58,8 +58,9 @@ public class LookUpValues {
         wheelSpeed.add(69.21, 0.605);
         wheelSpeed.add(92.7, 0.675);
         wheelSpeed.add(110.51, 0.748);
-        wheelSpeed.add(128.5, 0.816);
-        wheelSpeed.add(141.41, 0.865);
+        wheelSpeed.add(128.5, 0.785);
+        wheelSpeed.add(141.41, 0.84);
+        wheelSpeed.add(142.7, 0.86);
         wheelSpeed.add(155.87, 0.9);
         wheelSpeed.add(163.08, 0.904);
 

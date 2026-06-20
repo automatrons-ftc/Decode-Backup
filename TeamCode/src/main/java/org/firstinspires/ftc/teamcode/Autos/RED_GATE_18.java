@@ -79,6 +79,7 @@ public class RED_GATE_18 extends CommandOpMode {
         loopTime = new Timer();
 
         new SequentialCommandGroup(
+                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[0]),
                 new FollowerCommand(follower, paths.StartToShootPreload, 1, false),
                 commandVault.shootingProcAuto(),
                 commandVault.startIntake(),
@@ -92,6 +93,7 @@ public class RED_GATE_18 extends CommandOpMode {
                 commandVault.stopIntake(),
 //                new InstantCommand(() -> follower.setMaxPower(1.0)),
                 new FollowerCommand(follower, paths.Stack2ToOPENALLY, 1, false),
+                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[1]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.OPENALLYToShoot,1, false),
                         new SequentialCommandGroup(
@@ -104,6 +106,7 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.ShootToGate, 1, false),
                 commandVault.gateWaitCmd(),
                 commandVault.stopIntake(),
+                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[2]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.GateToShoot, 1, false),
                         new SequentialCommandGroup(
@@ -116,6 +119,7 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.ShootToGate, 1, false),
                 commandVault.gateWaitCmd(),
                 commandVault.stopIntake(),
+                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[3]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.GateToShoot, 1, false),
                         new SequentialCommandGroup(
@@ -128,6 +132,7 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.ShootToGate, 1, false),
                 commandVault.gateWaitCmd(),
                 commandVault.stopIntake(),
+                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[4]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.GateToShoot, 1, false),
                         new SequentialCommandGroup(
@@ -139,9 +144,10 @@ public class RED_GATE_18 extends CommandOpMode {
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootToStack1, 1, false),
                 commandVault.stopIntake(),
+                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[5]),
                 new FollowerCommand(follower, paths.Stack1ToPark, 1, false),
-                commandVault.shootingProcAuto()
-                //park shooter
+                commandVault.shootingProcAuto(),
+                commandVault.parkShooter()
         ).schedule();
     }
 
@@ -202,8 +208,6 @@ public class RED_GATE_18 extends CommandOpMode {
                             )
                     ))
                     .build();
-
-
 
             Stack2ToOPENALLY = follower.pathBuilder().addPath(
                             new BezierCurve(

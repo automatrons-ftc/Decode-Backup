@@ -90,8 +90,6 @@ public class Shooter extends SubsystemBase {
 
     private boolean fingerOpen = false;
 
-    public static double closeMult = 0.98;
-
     public Shooter(RobotMap robotMap, Supplier<Pose> curPose, Supplier<Pose> curPoseVel,
                    DecodeRobot.Alliance alliance, boolean doZero) {
 
@@ -188,7 +186,7 @@ public class Shooter extends SubsystemBase {
         }
 
         if(shooterLock == ShooterGoal.DISABLED) {
-            turretController.setSetPoint(-101);
+            turretController.setSetPoint(140);
             turretMotor.set(Range.clip(
                     turretController.calculate(getTurretAngle()),
                     -CodeParameters.MAX_TURRET_POWER,
@@ -252,8 +250,8 @@ public class Shooter extends SubsystemBase {
                 return;
             }
 
-            wheel1.set(getControlledWheelPower((!inAuto ? 1.0 : 0.999)*lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
-            wheel2.set(getControlledWheelPower((!inAuto ? 1.0 : 0.999)*lu_values.getWheel(futurePoseDist)*(atSmallTriangle() ? closeMult : 1.0)));
+            wheel1.set(getControlledWheelPower((!inAuto ? 1.0 : 1.032)*lu_values.getWheel(futurePoseDist)));
+            wheel2.set(getControlledWheelPower((!inAuto ? 1.0 : 1.032)*lu_values.getWheel(futurePoseDist)));
         }
     }
 

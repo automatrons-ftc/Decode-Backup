@@ -67,6 +67,34 @@ public class CommandSeriesVault {
         );
     }
 
+    public SequentialCommandGroup shootingProcAutoFAR() {
+        return new SequentialCommandGroup(
+                new ConditionalCommand(
+                        new SequentialCommandGroup(
+                                new WaitUntilCommand(() -> shooter.turretAtGoal() && shooter.wheelsAtSpeed()),
+                                new InstantCommand(intake::intake),
+                                new InstantCommand(shooter::openFinger),
+                                new WaitCommand(80),
+                                new InstantCommand(intake::engagePassthough),
+                                new WaitCommand(500),
+                                new InstantCommand(intake::stop),
+                                new InstantCommand(intake::disengagePassthough),
+                                new InstantCommand(shooter::closeFinger)
+                        ),
+                        new InstantCommand(),
+                        () -> shooter.turretInRange() && shooter.inLUTRange()
+                )
+        );
+    }
+
+    public InstantCommand setAutoAngle(double angle) {
+        return new InstantCommand(() -> shooter.enableAutoCustom(angle), shooter);
+    }
+
+    public InstantCommand parkShooter() {
+        return new InstantCommand(shooter::enableParkingState, shooter);
+    }
+
 //    public WaitCommand gateWaitCmd() { // TODO: Use Sensors
 //        return new WaitCommand(CodeParameters.GATE_WAIT_TIME);
 //    }
