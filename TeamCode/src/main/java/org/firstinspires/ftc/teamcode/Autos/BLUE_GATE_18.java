@@ -30,9 +30,9 @@ import org.firstinspires.ftc.teamcode.Util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.FollowerCommand;
 
-@Autonomous(name = "RED_GATE_18", group = "Autonomous")
+@Autonomous(name = "BLUE_GATE_18", group = "Autonomous")
 @Configurable
-public class RED_GATE_18 extends CommandOpMode {
+public class BLUE_GATE_18 extends CommandOpMode {
     private TelemetryManager panelsTelemetry;
     public Follower follower;
     private RobotMap robotMap;
@@ -52,7 +52,7 @@ public class RED_GATE_18 extends CommandOpMode {
 
     @Override
     public void initialize() {
-        pinpointPose = CodeParameters.RED_START_POSE;
+        pinpointPose = CodeParameters.BLUE_START_POSE;
         timer = new NanoTimer();
         deltaTimeNano = 1;
         CommandScheduler.getInstance().reset(); // Ultra SOS
@@ -60,12 +60,12 @@ public class RED_GATE_18 extends CommandOpMode {
         robotMap = new RobotMap(hardwareMap, telemetry,null,null);
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(CodeParameters.RED_START_POSE);
+        follower.setStartingPose(CodeParameters.BLUE_START_POSE);
         paths = new Paths(follower);
 
         intake = new Intake(robotMap);
         shooter = new Shooter(robotMap, this::getPose, this::getVelPose, this::getAccelPose,
-                DecodeRobot.Alliance.RED, false, false, true);
+                DecodeRobot.Alliance.BLUE, false, false, true);
         indicator = new IndicatorSubsystem(robotMap);
         commandVault = new CommandSeriesVault(intake, shooter, indicator);
 
@@ -77,18 +77,18 @@ public class RED_GATE_18 extends CommandOpMode {
         loopTime = new Timer();
 
         new SequentialCommandGroup(
-                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[0]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_GATE_TURRET_ANGLES[0]),
                 new FollowerCommand(follower, paths.StartToShootPreload, 1, false),
                 commandVault.shootingProcAuto(),
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootPreloadToStack2, 1, false),
                 commandVault.stopIntake(),
                 new FollowerCommand(follower, paths.Stack2ToOPENALLY, 1, false),
-                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[1]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_GATE_TURRET_ANGLES[1]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.OPENALLYToShoot,1, false),
                         new SequentialCommandGroup(
-                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.RED_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
+                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.BLUE_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
                                 commandVault.shootingProcAuto()
                         )
                 ),
@@ -97,11 +97,11 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.ShootToGate, 1, false),
                 commandVault.gateWaitCmd(),
                 commandVault.stopIntake(),
-                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[2]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_GATE_TURRET_ANGLES[2]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.GateToShoot, 1, false),
                         new SequentialCommandGroup(
-                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.RED_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
+                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.BLUE_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
                                 commandVault.shootingProcAuto()
                         )
                 ),
@@ -110,11 +110,11 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.ShootToGate, 1, false),
                 commandVault.gateWaitCmd(),
                 commandVault.stopIntake(),
-                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[3]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_GATE_TURRET_ANGLES[3]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.GateToShoot, 1, false),
                         new SequentialCommandGroup(
-                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.RED_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
+                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.BLUE_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
                                 commandVault.shootingProcAuto()
                         )
                 ),
@@ -123,11 +123,11 @@ public class RED_GATE_18 extends CommandOpMode {
                 new FollowerCommand(follower, paths.ShootToGate, 1, false),
                 commandVault.gateWaitCmd(),
                 commandVault.stopIntake(),
-                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[4]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_GATE_TURRET_ANGLES[4]),
                 new ParallelCommandGroup(
                         new FollowerCommand(follower, paths.GateToShoot, 1, false),
                         new SequentialCommandGroup(
-                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.RED_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
+                                new WaitUntilCommand(() -> follower.atPose(CodeParameters.BLUE_SHOOT_POSE, CodeParameters.GATE_SHOOTING_TOLERANCE, CodeParameters.GATE_SHOOTING_TOLERANCE)),
                                 commandVault.shootingProcAuto()
                         )
                 ),
@@ -135,7 +135,7 @@ public class RED_GATE_18 extends CommandOpMode {
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootToStack1, 1, false),
                 commandVault.stopIntake(),
-                commandVault.setAutoAngle(CodeParameters.RED_GATE_TURRET_ANGLES[5]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_GATE_TURRET_ANGLES[5]),
                 new FollowerCommand(follower, paths.Stack1ToPark, 1, false),
                 commandVault.shootingProcAuto(),
                 commandVault.parkShooter()
@@ -172,133 +172,133 @@ public class RED_GATE_18 extends CommandOpMode {
         public Paths(Follower follower) {
             StartToShootPreload = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    CodeParameters.RED_START_POSE,
-                                    CodeParameters.RED_SHOOT_PRELOADS_POSE
+                                    CodeParameters.BLUE_START_POSE,
+                                    CodeParameters.BLUE_SHOOT_PRELOADS_POSE
                             )
-                    ).setConstantHeadingInterpolation(CodeParameters.RED_START_POSE.getHeading())
+                    ).setConstantHeadingInterpolation(CodeParameters.BLUE_START_POSE.getHeading())
                     .build();
 
             ShootPreloadToStack2 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    CodeParameters.RED_SHOOT_PRELOADS_POSE,
-                                    new Pose(94.4, 57.9),
-                                    CodeParameters.RED_STACK2_POSE
+                                    CodeParameters.BLUE_SHOOT_PRELOADS_POSE,
+                                    new Pose(144-94.4, 57.9),
+                                    CodeParameters.BLUE_STACK2_POSE
                             )
                     ).setHeadingInterpolation(HeadingInterpolator.piecewise(
                             new HeadingInterpolator.PiecewiseNode(
                                     0,
                                     .2,
-                                    HeadingInterpolator.linear(CodeParameters.RED_SHOOT_PRELOADS_POSE.getHeading(), CodeParameters.RED_STACK2_POSE.getHeading())
+                                    HeadingInterpolator.linear(CodeParameters.BLUE_SHOOT_PRELOADS_POSE.getHeading(), CodeParameters.BLUE_STACK2_POSE.getHeading())
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .2,
                                     1,
-                                    HeadingInterpolator.constant(CodeParameters.RED_STACK2_POSE.getHeading())
+                                    HeadingInterpolator.constant(CodeParameters.BLUE_STACK2_POSE.getHeading())
                             )
                     ))
                     .build();
 
             Stack2ToOPENALLY = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    CodeParameters.RED_STACK2_POSE,
-                                    new Pose(116, 61, 0),
-                                    CodeParameters.RED_OPEN_ALLY
+                                    CodeParameters.BLUE_STACK2_POSE,
+                                    new Pose(144-116, 61, 0),
+                                    CodeParameters.BLUE_OPEN_ALLY
                             )
-                    ).setConstantHeadingInterpolation(0)
+                    ).setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
             OPENALLYToShoot = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    CodeParameters.RED_OPEN_ALLY,
-                                    CodeParameters.RED_SHOOT_POSE
+                                    CodeParameters.BLUE_OPEN_ALLY,
+                                    CodeParameters.BLUE_SHOOT_POSE
                             )
-                    ).setConstantHeadingInterpolation(0)
+                    ).setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
             ShootToGate = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    CodeParameters.RED_SHOOT_POSE,
-                                    new Pose(92, 63),
-                                    CodeParameters.RED_GATE_POSE
+                                    CodeParameters.BLUE_SHOOT_POSE,
+                                    new Pose(144-92, 63),
+                                    CodeParameters.BLUE_GATE_POSE
                             )
                     ).setHeadingInterpolation(HeadingInterpolator.piecewise(
                             new HeadingInterpolator.PiecewiseNode(
                                     0,
                                     .8,
-                                    HeadingInterpolator.linear(CodeParameters.RED_SHOOT_POSE.getHeading(), CodeParameters.RED_GATE_POSE.getHeading())
+                                    HeadingInterpolator.linear(CodeParameters.BLUE_SHOOT_POSE.getHeading(), CodeParameters.BLUE_GATE_POSE.getHeading())
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .8,
                                     1,
-                                    HeadingInterpolator.constant(CodeParameters.RED_GATE_POSE.getHeading())
+                                    HeadingInterpolator.constant(CodeParameters.BLUE_GATE_POSE.getHeading())
                             )
                     ))
                     .build();
 
             GateToShoot = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    CodeParameters.RED_GATE_POSE,
-                                    new Pose(92, 60),
-                                    CodeParameters.RED_SHOOT_POSE
+                                    CodeParameters.BLUE_GATE_POSE,
+                                    new Pose(144-92, 60),
+                                    CodeParameters.BLUE_SHOOT_POSE
                             )
                     ).setHeadingInterpolation(HeadingInterpolator.piecewise(
                             new HeadingInterpolator.PiecewiseNode(
                                     0,
                                     .1,
-                                    HeadingInterpolator.linear(CodeParameters.RED_GATE_POSE.getHeading(), 0)
+                                    HeadingInterpolator.linear(CodeParameters.BLUE_GATE_POSE.getHeading(), Math.toRadians(180))
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .1,
                                     .15,
-                                    HeadingInterpolator.constant(0)
+                                    HeadingInterpolator.constant(Math.toRadians(180))
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .15,
                                     .3,
-                                    HeadingInterpolator.linear(0, CodeParameters.RED_SHOOT_POSE.getHeading())
+                                    HeadingInterpolator.linear(Math.toRadians(180), CodeParameters.BLUE_SHOOT_POSE.getHeading())
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .3,
                                     1,
-                                    HeadingInterpolator.constant(CodeParameters.RED_SHOOT_POSE.getHeading())
+                                    HeadingInterpolator.constant(CodeParameters.BLUE_SHOOT_POSE.getHeading())
                             )
                     ))
                     .build();
 
             ShootToStack1 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    CodeParameters.RED_SHOOT_POSE,
-                                    CodeParameters.RED_STACK1_POSE
+                                    CodeParameters.BLUE_SHOOT_POSE,
+                                    CodeParameters.BLUE_STACK1_POSE
                             )
                     ).setHeadingInterpolation(HeadingInterpolator.piecewise(
                             new HeadingInterpolator.PiecewiseNode(
                                     0,
                                     .2,
-                                    HeadingInterpolator.linear(CodeParameters.RED_SHOOT_POSE.getHeading(), CodeParameters.RED_STACK1_POSE.getHeading())
+                                    HeadingInterpolator.linear(CodeParameters.BLUE_SHOOT_POSE.getHeading(), CodeParameters.BLUE_STACK1_POSE.getHeading())
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .2,
                                     1,
-                                    HeadingInterpolator.constant(CodeParameters.RED_STACK1_POSE.getHeading())
+                                    HeadingInterpolator.constant(CodeParameters.BLUE_STACK1_POSE.getHeading())
                             )
                     ))
                     .build();
 
             Stack1ToPark = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    CodeParameters.RED_STACK1_POSE,
-                                    CodeParameters.RED_PARK_POSE
+                                    CodeParameters.BLUE_STACK1_POSE,
+                                    CodeParameters.BLUE_PARK_POSE
                             )
                     ).setHeadingInterpolation(HeadingInterpolator.piecewise(
                             new HeadingInterpolator.PiecewiseNode(
                                     0,
                                     .2,
-                                    HeadingInterpolator.linear(CodeParameters.RED_STACK1_POSE.getHeading(), CodeParameters.RED_PARK_POSE.getHeading())
+                                    HeadingInterpolator.linear(CodeParameters.BLUE_STACK1_POSE.getHeading(), CodeParameters.BLUE_PARK_POSE.getHeading())
                             ),
                             new HeadingInterpolator.PiecewiseNode(
                                     .2,
                                     1,
-                                    HeadingInterpolator.constant(CodeParameters.RED_PARK_POSE.getHeading())
+                                    HeadingInterpolator.constant(CodeParameters.BLUE_PARK_POSE.getHeading())
                             )
                     ))
                     .build();

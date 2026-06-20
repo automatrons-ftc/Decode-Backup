@@ -193,6 +193,9 @@ public class Shooter extends SubsystemBase {
                     CodeParameters.MAX_TURRET_POWER
             ));
 
+            wheel1.set(0);
+            wheel2.set(0);
+
             hoodServo.setPosition(CodeParameters.MIN_HOOD_POS);
             return;
         }

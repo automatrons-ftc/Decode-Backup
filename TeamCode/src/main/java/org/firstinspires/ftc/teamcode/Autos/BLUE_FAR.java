@@ -2,10 +2,8 @@ package org.firstinspires.ftc.teamcode.Autos;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
-import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
@@ -31,9 +29,9 @@ import org.firstinspires.ftc.teamcode.Util.Timer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.pedroPathing.FollowerCommand;
 
-@Autonomous(name = "RED_FAR", group = "Autonomous")
+@Autonomous(name = "BLUE_FAR", group = "Autonomous")
 @Configurable
-public class RED_FAR extends CommandOpMode {
+public class BLUE_FAR extends CommandOpMode {
     private TelemetryManager panelsTelemetry;
     public Follower follower;
     private RobotMap robotMap;
@@ -53,7 +51,7 @@ public class RED_FAR extends CommandOpMode {
 
     @Override
     public void initialize() {
-        pinpointPose = CodeParameters.RED_START_POSE_FAR;
+        pinpointPose = CodeParameters.BLUE_START_POSE_FAR;
         timer = new NanoTimer();
         deltaTimeNano = 1;
         CommandScheduler.getInstance().reset(); // Ultra SOS
@@ -61,12 +59,12 @@ public class RED_FAR extends CommandOpMode {
         robotMap = new RobotMap(hardwareMap, telemetry,null,null);
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(CodeParameters.RED_START_POSE_FAR);
+        follower.setStartingPose(CodeParameters.BLUE_START_POSE_FAR);
         paths = new Paths(follower);
 
         intake = new Intake(robotMap);
         shooter = new Shooter(robotMap, this::getPose, this::getVelPose, this::getAccelPose,
-                DecodeRobot.Alliance.RED, false, false, true);
+                DecodeRobot.Alliance.BLUE, false, false, true);
         indicator = new IndicatorSubsystem(robotMap);
         commandVault = new CommandSeriesVault(intake, shooter, indicator);
 
@@ -78,12 +76,12 @@ public class RED_FAR extends CommandOpMode {
         loopTime = new Timer();
 
         new SequentialCommandGroup(
-                commandVault.setAutoAngle(CodeParameters.RED_FAR_TURRET_ANGLES[0]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_FAR_TURRET_ANGLES[0]),
                 new FollowerCommand(follower, paths.StartToShootPreloads, 1, false),
                 commandVault.shootingProcAutoFAR(),
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootPreloadsToStack3, 1, false),
-                commandVault.setAutoAngle(CodeParameters.RED_FAR_TURRET_ANGLES[1]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_FAR_TURRET_ANGLES[1]),
                 commandVault.stopIntake(),
                 new FollowerCommand(follower, paths.Stack3ToShoot, 1, false),
                 commandVault.shootingProcAutoFAR(),
@@ -97,7 +95,7 @@ public class RED_FAR extends CommandOpMode {
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootToHP, 1, false),
                 new WaitCommand(300),
-                commandVault.setAutoAngle(CodeParameters.RED_FAR_TURRET_ANGLES[2]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_FAR_TURRET_ANGLES[2]),
                 commandVault.stopIntake(),
                 new FollowerCommand(follower, paths.HPToShoot, 1, false),
                 commandVault.shootingProcAutoFAR(),
@@ -106,7 +104,7 @@ public class RED_FAR extends CommandOpMode {
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootToHP, 1, false),
                 new WaitCommand(300),
-                commandVault.setAutoAngle(CodeParameters.RED_FAR_TURRET_ANGLES[3]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_FAR_TURRET_ANGLES[3]),
                 commandVault.stopIntake(),
                 new FollowerCommand(follower, paths.HPToShoot, 1, false),
                 commandVault.shootingProcAutoFAR(),
@@ -115,7 +113,7 @@ public class RED_FAR extends CommandOpMode {
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootToHP, 1, false),
                 new WaitCommand(300),
-                commandVault.setAutoAngle(CodeParameters.RED_FAR_TURRET_ANGLES[4]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_FAR_TURRET_ANGLES[4]),
                 commandVault.stopIntake(),
                 new FollowerCommand(follower, paths.HPToShoot, 1, false),
                 commandVault.shootingProcAutoFAR(),
@@ -124,7 +122,7 @@ public class RED_FAR extends CommandOpMode {
                 commandVault.startIntake(),
                 new FollowerCommand(follower, paths.ShootToHP, 1, false),
                 new WaitCommand(300),
-                commandVault.setAutoAngle(CodeParameters.RED_FAR_TURRET_ANGLES[5]),
+                commandVault.setAutoAngle(CodeParameters.BLUE_FAR_TURRET_ANGLES[5]),
                 commandVault.stopIntake(),
                 new FollowerCommand(follower, paths.HPToShoot, 1, false),
                 commandVault.shootingProcAutoFAR(),
@@ -163,58 +161,58 @@ public class RED_FAR extends CommandOpMode {
         public Paths(Follower follower) {
             StartToShootPreloads = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    CodeParameters.RED_START_POSE_FAR,
-                                    CodeParameters.RED_SHOOT_PRELOADS_POSE_FAR
+                                    CodeParameters.BLUE_START_POSE_FAR,
+                                    CodeParameters.BLUE_SHOOT_PRELOADS_POSE_FAR
                             )
-                    ).setLinearHeadingInterpolation(CodeParameters.RED_START_POSE_FAR.getHeading(), CodeParameters.RED_SHOOT_PRELOADS_POSE_FAR.getHeading())
+                    ).setLinearHeadingInterpolation(CodeParameters.BLUE_START_POSE_FAR.getHeading(), CodeParameters.BLUE_SHOOT_PRELOADS_POSE_FAR.getHeading())
                     .build();
 
             ShootPreloadsToStack3 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    CodeParameters.RED_SHOOT_PRELOADS_POSE_FAR,
-                                    new Pose(96, 40),
-                                    CodeParameters.RED_STACK3_POSE
+                                    CodeParameters.BLUE_SHOOT_PRELOADS_POSE_FAR,
+                                    new Pose(144-96, 40),
+                                    CodeParameters.BLUE_STACK3_POSE
                             )).setHeadingInterpolation(HeadingInterpolator.piecewise(
                                     new HeadingInterpolator.PiecewiseNode(
                                             0,
                                             .4,
-                                            HeadingInterpolator.linear(CodeParameters.RED_SHOOT_PRELOADS_POSE_FAR.getHeading(), CodeParameters.RED_STACK3_POSE.getHeading())
+                                            HeadingInterpolator.linear(CodeParameters.BLUE_SHOOT_PRELOADS_POSE_FAR.getHeading(), CodeParameters.BLUE_STACK3_POSE.getHeading())
                                     ),
                                     new HeadingInterpolator.PiecewiseNode(
                                             .4,
                                             1,
-                                            HeadingInterpolator.constant(CodeParameters.RED_STACK3_POSE.getHeading())
+                                            HeadingInterpolator.constant(CodeParameters.BLUE_STACK3_POSE.getHeading())
                                     )
                             )).build();
 
             Stack3ToShoot = follower.pathBuilder().addPath(
                     new BezierLine(
-                            CodeParameters.RED_STACK3_POSE,
-                            CodeParameters.RED_SHOOT_POSE_FAR
-                    )).setConstantHeadingInterpolation(CodeParameters.RED_SHOOT_POSE_FAR.getHeading())
+                            CodeParameters.BLUE_STACK3_POSE,
+                            CodeParameters.BLUE_SHOOT_POSE_FAR
+                    )).setConstantHeadingInterpolation(CodeParameters.BLUE_SHOOT_POSE_FAR.getHeading())
                     .build();
 
             ShootToHP = follower.pathBuilder().addPath(
                     new BezierCurve(
-                            CodeParameters.RED_SHOOT_POSE_FAR,
-                            new Pose(98, 11),
-                            CodeParameters.RED_HP_POSE
-                    )).setConstantHeadingInterpolation(CodeParameters.RED_HP_POSE.getHeading())
+                            CodeParameters.BLUE_SHOOT_POSE_FAR,
+                            new Pose(144-98, 9.6),
+                            CodeParameters.BLUE_HP_POSE
+                    )).setConstantHeadingInterpolation(CodeParameters.BLUE_HP_POSE.getHeading())
                     .build();
 
             HPToShoot = follower.pathBuilder().addPath(
                     new BezierCurve(
-                            CodeParameters.RED_HP_POSE,
-                            new Pose(98, 11),
-                            CodeParameters.RED_SHOOT_POSE_FAR
-                    )).setConstantHeadingInterpolation(CodeParameters.RED_SHOOT_POSE_FAR.getHeading())
+                            CodeParameters.BLUE_HP_POSE,
+                            new Pose(144-98, 11),
+                            CodeParameters.BLUE_SHOOT_POSE_FAR
+                    )).setConstantHeadingInterpolation(CodeParameters.BLUE_SHOOT_POSE_FAR.getHeading())
                     .build();
 
             ShootToPark = follower.pathBuilder().addPath(
                     new BezierLine(
-                            CodeParameters.RED_SHOOT_POSE_FAR,
-                            CodeParameters.RED_PARK_POSE_FAR
-                    )).setConstantHeadingInterpolation(CodeParameters.RED_PARK_POSE_FAR.getHeading())
+                            CodeParameters.BLUE_SHOOT_POSE_FAR,
+                            CodeParameters.BLUE_PARK_POSE_FAR
+                    )).setConstantHeadingInterpolation(CodeParameters.BLUE_PARK_POSE_FAR.getHeading())
                     .build();
         }
     }

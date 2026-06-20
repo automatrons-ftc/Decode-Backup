@@ -67,8 +67,8 @@ public class TeleOpBase extends CommandOpMode {
         RobotConstants.SLOW_SPEED_PERC = 0.7;
 
         // ---------------------------- Transfer Pose from Autonomous --------------------------- //
-//        pose = PoseStorage.currentPose;
-        pose = new Pose(72, 72, Math.toRadians(90));
+        pose = PoseStorage.currentPose;
+//        pose = new Pose(72, 72, Math.toRadians(90));
     }
 
     public void initAllianceRelated(DecodeRobot.Alliance alliance) {
