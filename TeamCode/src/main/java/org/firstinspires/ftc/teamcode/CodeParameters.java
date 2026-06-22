@@ -7,7 +7,7 @@ import com.pedropathing.geometry.Pose;
 public class CodeParameters {
     ////// ----------------------------------- Mechanisms ----------------------------------- //////
     //// ---------------------------------- Intake Constants ---------------------------------- ////
-    public static double PASSTHROUGH_ENGAGED_POS = 0.75, PASSTHROUGH_DISENGAGED_POS = 0.6;
+    public static double PASSTHROUGH_ENGAGED_POS = 0.75, PASSTHROUGH_DISENGAGED_POS = 0.6; // Ramp
     public static double INTAKE_POWER = 1.0;
 
     //// --------------------------------- Shooter Constants ---------------------------------- ////
@@ -34,17 +34,17 @@ public class CodeParameters {
     public static double BLACK_COLOR = 0.0, RED_COLOR = 0.3, GREEN_COLOR = 0.47;
 
     ////// ----------------------------------- Autonomous ----------------------------------- //////
-    public static long GATE_WAIT_TIME = 2200;
-    public static double GATE_SHOOTING_TOLERANCE = 7.5;
+    public static long GATE_WAIT_TIME = 2200; //ms
+    public static double GATE_SHOOTING_TOLERANCE = 7.5; // inch
     // ---------------------------------------- RED GATE ---------------------------------------- //
     public static Pose RED_START_POSE = new Pose(118, 126, Math.toRadians(46));
     public static Pose RED_SHOOT_PRELOADS_POSE = new Pose(91.4, 92.3, Math.toRadians(46));
     public static Pose RED_STACK2_POSE = new Pose(132.4, 59, 0);
-    public static Pose RED_OPEN_ALLY = new Pose(124.8, 63.2, 0);
-    public static Pose RED_GATE_POSE = new Pose(131.2, 59.6, Math.toRadians(35));
-    public static Pose RED_SHOOT_POSE = new Pose(87, 80, Math.toRadians(322));
+    public static Pose RED_OPEN_ALLY = new Pose(124.8, 59, 0);
+    public static Pose RED_GATE_POSE = new Pose(131.2, 56, Math.toRadians(35));
+    public static Pose RED_SHOOT_POSE = new Pose(90, 77, Math.toRadians(322));
     public static Pose RED_STACK1_POSE = new Pose(125, 83.4, 0);
-    public static Pose RED_PARK_POSE = new Pose(89, 108, Math.toRadians(305));
+    public static Pose RED_PARK_POSE = new Pose(94, 100, Math.toRadians(305));
     public static double[] RED_GATE_TURRET_ANGLES = {1, 42, 83, 83, 83, 83}; // PRELOADS, STACK2, GATE, GATE, GATE, PARK
 
     // ---------------------------------------- BLUE GATE --------------------------------------- //
